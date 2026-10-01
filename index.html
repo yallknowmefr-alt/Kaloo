@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalo</title>
+<meta name="theme-color" content="#070b0a">
+<meta name="description" content="Kalo: AI calorie tracking with photo scan, water, BMI and custom workouts.">
+<meta property="og:title" content="Kalo — AI calorie, water &amp; workout tracker">
+<meta property="og:description" content="Snap your meal, get calories. Track water, BMI and build your own workouts.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%97%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--tx:#1c2320;--mu:#6b7770;--ac:#2f8f5b;--ln:#e2e6e1;--tr:#e6ebe6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121614;--card:#1b211e;--tx:#e8eee9;--mu:#98a59d;--ac:#4cc48a;--ln:#2a322e;--tr:#28312c}}
+:root[data-theme="dark"]{--bg:#121614;--card:#1b211e;--tx:#e8eee9;--mu:#98a59d;--ac:#4cc48a;--ln:#2a322e;--tr:#28312c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:16px;margin-bottom:14px}
+.tabs{display:flex;gap:4px;background:var(--tr);padding:4px;border-radius:12px;margin-bottom:14px}
+.tabs button{flex:1;border:0;background:none;color:var(--mu);padding:9px 4px;border-radius:9px;font:inherit;font-weight:600;font-size:15px}
+.tabs button.on{background:var(--card);color:var(--tx)}
+textarea,input,select{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:10px}
+textarea{min-height:80px;resize:vertical}
+.btn{width:100%;margin-top:10px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700;padding:13px}
+.btn:disabled{opacity:.5}
+.btn2{width:100%;margin-top:10px;border:1px solid var(--ac);border-radius:12px;background:none;color:var(--ac);font:inherit;font-weight:700;padding:12px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+.big{font-size:38px;font-weight:800}
+.mu{color:var(--mu);font-size:14px}
+.bar{height:10px;background:var(--tr);border-radius:9px;overflow:hidden;margin:10px 0 6px}
+.bar i{display:block;height:100%;background:var(--ac);width:0}
+.item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--ln)}
+.item:first-child{border-top:0}
+.x{border:0;background:none;color:var(--mu);font-size:18px}
+.macros{display:flex;gap:14px;font-size:14px;color:var(--mu);margin-top:6px}
+.err{color:#d2473c;font-size:14px;margin-top:8px}
+.hide{display:none}
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.tile{border:1px solid var(--ln);background:var(--bg);border-radius:14px;padding:12px;text-align:left;color:var(--tx);font:inherit}
+.tile .v{font-size:26px;font-weight:800;line-height:1.15}
+.tile .bar{margin:8px 0 4px}
+.hist{display:flex;gap:6px;height:84px;margin-top:8px}
+.hist div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.hist i{display:block;width:100%;border-radius:6px 6px 2px 2px;min-height:3px}
+.hist span{font-size:11px;color:var(--mu);margin-top:4px}
+.mrow{margin:10px 0 2px}.mrow .top{display:flex;justify-content:space-between;font-size:14px}
+.tabs button{font-size:10.5px}
+
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11.5px;padding:6px 1px}
+.tabs button b{font-size:18px;font-weight:400;line-height:1.2}
+.gauge{position:relative;display:flex;height:12px;margin:14px 0 8px}
+.gauge i{height:100%}.gauge i:first-child{border-radius:8px 0 0 8px}.gauge i:nth-child(4){border-radius:0 8px 8px 0}
+.gauge u{position:absolute;top:-5px;width:4px;height:22px;background:var(--tx);border-radius:2px;left:0;transform:translateX(-2px);transition:left .3s}
+.chips2{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-top:8px}
+.chips2 .chip{flex:none;padding:7px 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.ex{border:1px solid var(--ln);border-radius:14px;padding:8px;background:var(--bg);display:flex;flex-direction:column;gap:4px}
+.ex svg{width:100%;height:auto;background:var(--tr);border-radius:10px}
+.ex b{font-size:15px}.ex .mu{font-size:12px}
+.ex button{margin-top:auto;border:0;border-radius:9px;background:var(--ac);color:#fff;font:inherit;font-weight:700;padding:7px}
+.ri{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--ln)}
+.ri svg{width:72px;flex:none;border-radius:8px;background:var(--tr)}
+.ri .in{flex:1;min-width:0}
+.ri .ctl{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:4px;font-size:13px;color:var(--mu)}
+.ri button,.sv button{border:1px solid var(--ln);background:var(--bg);color:var(--tx);border-radius:8px;min-width:30px;height:30px;font:inherit}
+.sv{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--ln)}
+.sv div:last-child{display:flex;gap:6px}
+@keyframes fa{0%,49.9%{opacity:1}50%,100%{opacity:0}}
+@keyframes fb{0%,49.9%{opacity:0}50%,100%{opacity:1}}
+.fa{animation:fa 2s infinite}.fb{animation:fb 2s infinite}
+@media (prefers-reduced-motion:reduce){.fa{animation:none;opacity:0}.fb{animation:none;opacity:1}}
+
+.side{display:flex;gap:12px;align-items:flex-start}
+.side .main{flex:1;min-width:0}
+.wat{width:96px;flex:none;display:flex;flex-direction:column;align-items:center;text-align:center;border-left:1px solid var(--ln);padding-left:10px;gap:6px;margin-top:10px}
+.tube{width:36px;height:90px;border:2px solid var(--ln);border-radius:12px;background:var(--tr);overflow:hidden;display:flex;align-items:flex-end}
+.tube i{display:block;width:100%;height:0;background:#3b9ae1;transition:height .3s}
+.wb{display:flex;gap:6px}
+.wb button{width:36px;height:36px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--tx);font-size:18px}
+.wb #wp{background:#3b9ae1;color:#fff;border-color:#3b9ae1}
+.chips{display:flex;gap:6px;margin-top:6px}
+.chip{flex:1;border:2px solid var(--ln);background:var(--bg);color:var(--tx);border-radius:12px;padding:9px 2px;font:inherit;font-size:14px;font-weight:600}
+.chip.on{border-color:var(--ac);color:var(--ac)}
+.plan{display:block;width:100%;text-align:left;background:var(--bg);color:var(--tx);border:2px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px;font:inherit}
+.plan.on{border-color:var(--ac)}
+.plan .h{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.plan .k{font-size:22px;font-weight:800;color:var(--ac)}
+.snap{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:34px 12px;border:2px dashed var(--ac);border-radius:16px;background:none;color:var(--ac);font:inherit;font-weight:700}
+.snap span{font-size:44px;line-height:1}
+.pv img{width:100%;max-height:260px;object-fit:cover;border-radius:12px;display:block}
+.sc{padding:12px 0;border-top:1px solid var(--ln)}
+.sc:first-child{border-top:0}
+.sc .top{display:flex;justify-content:space-between;gap:10px;font-weight:600}
+.amt{display:flex;align-items:center;gap:8px;margin-top:8px}
+.amt input{width:90px;text-align:center}
+.amt .st{width:40px;height:40px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--tx);font-size:20px}
+.amt .u{color:var(--mu);font-size:14px}
+
+/*KALO-DESIGN*/
+:root:root:root{--bg:#070b0a;--card:rgba(255,255,255,.06);--tx:#eef5f0;--mu:#9bb0a4;--ac:#3ddc97;--ln:rgba(255,255,255,.11);--tr:rgba(255,255,255,.08);--onac:#03150d}
+@media (prefers-color-scheme:light){:root:root:root:not([data-theme="dark"]){--bg:#eaf2ed;--card:rgba(255,255,255,.72);--tx:#12201a;--mu:#587064;--ac:#0fa968;--ln:rgba(18,32,26,.1);--tr:rgba(18,32,26,.07);--onac:#fff}}
+body{font-family:"Plus Jakarta Sans",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;filter:blur(24px);
+ background:radial-gradient(38% 38% at 18% 18%,rgba(61,220,151,.30),transparent 65%),radial-gradient(34% 34% at 84% 8%,rgba(124,92,255,.32),transparent 65%),radial-gradient(44% 44% at 72% 92%,rgba(38,198,218,.24),transparent 65%);animation:aurora 24s ease-in-out infinite alternate}
+@keyframes aurora{to{transform:translate3d(5%,4%,0) rotate(9deg) scale(1.12)}}
+select option{background:#14201a;color:#eef5f0}
+textarea,input,select{background:var(--tr);border:1px solid var(--ln);border-radius:12px;transition:border-color .2s,box-shadow .2s}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px rgba(61,220,151,.22)}
+.hd{text-align:center;padding:12px 0 2px}
+.hd h1{font-size:36px;margin:6px 0 2px;letter-spacing:-.02em;font-weight:800}
+.lg{display:inline-block;animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px) rotate(-7deg)}}
+.gt{background:linear-gradient(90deg,#3ddc97,#26c6da,#7c5cff,#3ddc97);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gshift 8s linear infinite}
+@keyframes gshift{to{background-position:300% 0}}
+.tag{margin:0 0 14px;color:var(--mu);font-size:13px;letter-spacing:.05em}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:22px;-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);box-shadow:0 12px 40px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.06)}
+.tabs{background:var(--card);border:1px solid var(--ln);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-radius:18px;padding:5px;position:sticky;top:8px;z-index:5;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.tabs button{transition:all .25s;border-radius:13px;color:var(--mu);cursor:pointer}
+.tabs button:hover{color:var(--tx)}
+.tabs button.on{background:linear-gradient(135deg,var(--ac),#26c6da);color:var(--onac);box-shadow:0 6px 20px rgba(61,220,151,.35)}
+.tabs button.on b{animation:pop .5s}
+@keyframes pop{40%{transform:scale(1.35) rotate(-8deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.98)}}
+@keyframes fade{from{opacity:0}}
+main>section:not(.hide)>.card{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+main>section:not(.hide)>.card:nth-child(2){animation-delay:.07s}
+main>section:not(.hide)>.card:nth-child(3){animation-delay:.14s}
+main>section:not(.hide)>.card:nth-child(4){animation-delay:.21s}
+main>section:not(.hide)>.card:nth-child(5){animation-delay:.28s}
+.btn{background:linear-gradient(135deg,var(--ac),#26c6da);color:var(--onac);border-radius:14px;box-shadow:0 8px 24px rgba(61,220,151,.28);transition:transform .15s,box-shadow .2s,filter .2s;cursor:pointer}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 12px 30px rgba(61,220,151,.4)}
+.btn:disabled{opacity:.85;background:linear-gradient(110deg,var(--ac) 30%,#b6ffe0 50%,var(--ac) 70%);background-size:200% 100%;animation:shimmer 1.1s linear infinite;transform:none}
+@keyframes shimmer{to{background-position:-200% 0}}
+.btn2{border-radius:14px;background:transparent;transition:background .2s,transform .15s;cursor:pointer}
+.btn2:hover{background:var(--tr)}
+.btn:active,.btn2:active,.snap:active,.chip:active,.tile:active,.plan:active,.ex button:active{transform:scale(.97)}
+.chip{transition:all .2s;cursor:pointer}
+.chip:hover{border-color:var(--ac)}
+.chip.on{background:linear-gradient(135deg,rgba(61,220,151,.2),rgba(38,198,218,.12));box-shadow:0 0 0 1px var(--ac) inset}
+.plan,.tile,.ex{transition:transform .2s,border-color .2s,box-shadow .25s,background .2s;cursor:pointer}
+.ex{cursor:default}
+.plan:hover,.tile:hover,.ex:hover{transform:translateY(-3px);border-color:var(--ac);box-shadow:0 14px 36px rgba(0,0,0,.3)}
+.plan.on{background:rgba(61,220,151,.1);box-shadow:0 0 0 1px var(--ac) inset,0 0 30px rgba(61,220,151,.18)}
+.ex{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*35ms);border-radius:18px}
+.ex svg{background:linear-gradient(160deg,var(--tr),transparent)}
+.ex button{background:linear-gradient(135deg,var(--ac),#26c6da);color:var(--onac);transition:transform .15s,filter .2s;cursor:pointer}
+.ex button:hover{filter:brightness(1.1)}
+.ri{animation:rise .4s cubic-bezier(.2,.8,.2,1) both}
+.snap{border-radius:20px;background:rgba(61,220,151,.05);animation:breathe 3s ease-in-out infinite;cursor:pointer}
+@keyframes breathe{50%{box-shadow:0 0 0 9px rgba(61,220,151,.09)}}
+.bar{height:12px;border-radius:12px}
+.bar i{transition:width .9s cubic-bezier(.2,.8,.2,1);background-image:linear-gradient(90deg,var(--ac),#26c6da);border-radius:12px}
+.big{letter-spacing:-.02em}
+.pv{position:relative;overflow:hidden;border-radius:14px}
+.pv.scanning img{filter:saturate(1.3) brightness(.85)}
+.pv.scanning::after{content:"";position:absolute;left:0;right:0;height:3px;top:0;background:linear-gradient(90deg,transparent,var(--ac),transparent);box-shadow:0 0 18px 4px var(--ac);animation:sweep 1.3s ease-in-out infinite alternate}
+@keyframes sweep{to{top:calc(100% - 3px)}}
+.tube{background:var(--tr);box-shadow:inset 0 2px 8px rgba(0,0,0,.25)}
+.tube i{position:relative;background:linear-gradient(180deg,#6cc1ff,#2f7fe0);transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.tube i::before{content:"";position:absolute;top:-6px;left:-30px;width:calc(100% + 60px);height:12px;background:radial-gradient(circle at 50% 100%,#6cc1ff 55%,transparent 57%) repeat-x;background-size:18px 12px;animation:wave 1.6s linear infinite}
+.tube i[style*="height: 0%"]::before,.tube i[style*="height:0%"]::before{display:none}
+@keyframes wave{to{transform:translateX(18px)}}
+.hist i{transform-origin:bottom;animation:growY .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes growY{from{transform:scaleY(0)}}
+.gauge u{box-shadow:0 0 12px var(--tx)}
+.ringwrap{position:relative;width:190px;height:190px;margin:14px auto 6px}
+.ring{width:100%;height:100%;transform:rotate(-90deg)}
+.rt{fill:none;stroke:var(--tr);stroke-width:10}
+.rp{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1),stroke .4s;filter:drop-shadow(0 0 8px rgba(61,220,151,.55))}
+.rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#rgv{font-size:40px;font-weight:800;letter-spacing:-.02em}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media (min-width:900px){
+ main{max-width:1120px;padding:24px 28px 40px;display:grid;grid-template-columns:230px minmax(0,1fr);column-gap:30px;align-items:start}
+ .hd{grid-column:1/-1;padding-bottom:12px}.hd h1{font-size:46px}
+ .tabs{grid-column:1;grid-row:2;flex-direction:column;top:20px;gap:4px;padding:8px}
+ .tabs button{flex-direction:row;justify-content:flex-start;gap:12px;font-size:15px;padding:13px 14px}
+ .tabs button b{font-size:20px}
+ main>section{grid-column:2;grid-row:2}
+ main>p{grid-column:1/-1}
+ #p6:not(.hide),#p1:not(.hide){display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+ #p6>.card,#p1>.card{margin:0}
+ #p6>.card:nth-child(1){grid-row:span 2}
+ #p6>.card:nth-child(4),#p1>.card:nth-child(3){grid-column:1/-1}
+ #p2,#p3,#p4{max-width:680px}
+ .grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<main>
+<header class="hd"><h1><span class="lg">🥗</span> <span class="gt">Kalo</span></h1><p class="tag">Eat smart · Drink more · Move better</p></header>
+<div class="tabs"><button id="t6" class="on"><b>🏠</b>Home</button><button id="t1"><b>🍽</b>Meals</button><button id="t3"><b>📸</b>Scan</button><button id="t2"><b>🎯</b>Goal</button><button id="t4"><b>⚖️</b>BMI</button><button id="t5"><b>🏋️</b>Workout</button></div>
+
+<section id="p6">
+  <div class="card">
+    <div class="mu" id="ovdate"></div>
+    <div style="font-size:20px;font-weight:800;margin-top:2px">Your day at a glance</div>
+    <div class="ringwrap"><svg viewBox="0 0 120 120" class="ring" aria-hidden="true"><defs><linearGradient id="rgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ddc97"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><circle cx="60" cy="60" r="52" class="rt"/><circle id="rg" cx="60" cy="60" r="52" class="rp" stroke="url(#rgd)" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg><div class="rc"><div id="rgv">0</div><div class="mu" id="rgl">kcal left</div></div></div>
+    <div class="g4" id="ovg"></div>
+  </div>
+  <div class="card"><div class="mu">Today's macros <span id="ovplan"></span></div><div id="ovm"></div></div>
+  <div class="card">
+    <div class="mu">Last 7 days · calories</div><div class="hist" id="ovh"></div><div class="mu" id="ovhs" style="margin-top:8px"></div>
+    <div class="mu" style="margin-top:14px">Last 7 days · water</div><div class="hist" id="ovw"></div>
+    <div class="mu" id="ovws" style="margin-top:8px"></div>
+  </div>
+  <div class="card"><div class="mu" style="margin-bottom:8px">Quick actions</div>
+    <div class="g4"><button class="btn2" style="margin:0" id="qa1">🍽 Log a meal</button><button class="btn2" style="margin:0" id="qa2">📸 Scan food</button><button class="btn2" style="margin:0" id="qa3">💧 +250 ml water</button><button class="btn2" style="margin:0" id="qa4">🏋️ Workout</button></div>
+  </div>
+</section>
+
+<section id="p1" class="hide">
+  <div class="card">
+    <div class="mu">Choose your goal</div>
+    <div class="chips" id="chips"></div>
+    <div class="side"><div class="main"><div class="mu" id="lbl" style="margin-top:14px">Calories left today</div>
+    <div><span class="big" id="left">2000</span> <span class="mu">kcal</span></div>
+    <div class="bar"><i id="fill"></i></div>
+    <div class="mu" id="sub"></div></div>
+    <div class="wat">
+      <div class="mu">💧 Water</div>
+      <div class="tube"><i id="wfill"></i></div>
+      <div><b id="wml">0</b><span class="mu"> / <span id="wgoal">2.5</span> L</span></div>
+      <div class="mu" id="wsub" style="font-size:12px"></div>
+      <div class="wb"><button id="wm" aria-label="Remove a glass">−</button><button id="wp" aria-label="Add a glass">+</button></div>
+    </div></div>
+    <div class="macros" id="mac"></div>
+  </div>
+  <div class="card">
+    <label style="margin-top:0">Describe what you ate</label>
+    <textarea id="q" placeholder="e.g. 2 scrambled eggs, a slice of sourdough with butter, and a large latte with oat milk"></textarea>
+    <button class="btn" id="go">Estimate calories</button>
+    <button class="btn2" id="toscan">📸 Or scan a photo instead</button>
+    <div class="err" id="err"></div>
+  </div>
+  <div class="card"><div class="mu" id="empty">No meals logged yet.</div><div id="log"></div></div>
+</section>
+
+<section id="p3" class="hide">
+  <div class="card">
+    <input type="file" id="fcam" accept="image/*" capture="environment" class="hide">
+    <input type="file" id="fgal" accept="image/*" class="hide">
+    <div id="pick">
+      <button class="snap" id="snap"><span>📷</span>Tap to take a photo<div class="mu" style="font-weight:400">Opens your phone camera</div></button>
+      <button class="btn2" id="gal">🖼 Choose from gallery</button>
+      <div class="mu" style="margin-top:10px">Tip: shoot from above in good light, with a fork or your hand in frame for scale.</div>
+    </div>
+    <div id="prev" class="hide">
+      <div class="pv"><img id="pimg" alt="Meal photo"></div>
+      <label>Anything the camera can't see? (optional)</label>
+      <input id="hint" placeholder="e.g. cooked in 1 tbsp oil, small bowl">
+      <button class="btn" id="an">Detect food &amp; calories</button>
+      <button class="btn2" id="again">Retake</button>
+    </div>
+    <div class="err" id="serr"></div>
+  </div>
+  <div class="card hide" id="sres">
+    <div class="mu">Detected in your photo</div>
+    <div><span class="big" id="stot">0</span> <span class="mu">kcal</span></div>
+    <div class="macros"><span>P <b id="sp">0</b>g</span><span>C <b id="sc2">0</b>g</span><span>F <b id="sf">0</b>g</span></div>
+    <div class="mu" style="margin:8px 0 2px">Adjust the amount of each item if the estimate is off. Calories update instantly.</div>
+    <div id="sl"></div>
+    <button class="btn" id="addall">Add to today's log</button>
+  </div>
+</section>
+
+<section id="p2" class="hide">
+  <div class="card">
+    <div class="mu" id="gmsg" style="margin-bottom:8px"></div>
+    <div class="row"><div><label style="margin-top:0">Sex</label><select id="sex"><option value="m">Male</option><option value="f">Female</option></select></div>
+    <div><label style="margin-top:0">Age</label><input id="age" type="number" value="30"></div></div>
+    <div class="row"><div><label>Height (cm)</label><input id="ht" type="number" value="172"></div>
+    <div><label>Weight (kg)</label><input id="wt" type="number" value="70"></div></div>
+    <label>Activity</label>
+    <select id="act"><option value="1.2">Sedentary</option><option value="1.375">Light (1–3 days/wk)</option><option value="1.55" selected>Moderate (3–5 days/wk)</option><option value="1.725">Very active (6–7 days/wk)</option></select>
+    <button class="btn" id="calc">Calculate my plans</button>
+  </div>
+  <div class="card hide" id="res">
+    <div class="mu">Maintenance (TDEE)</div><div class="big" id="tdee"></div>
+    <div class="mu" style="margin:12px 0 8px">Choose your plan. Tap one to set it as your daily goal.</div>
+    <div id="plans"></div>
+    <div class="mu">Uses the Mifflin-St Jeor equation. Estimates only, not medical advice.</div>
+  </div>
+  </section>
+
+<section id="p4" class="hide">
+  <div class="card">
+    <div class="mu">Body Mass Index</div>
+    <div class="row"><div><label style="margin-top:8px">Height (cm)</label><input id="bh" type="number" inputmode="decimal"></div>
+    <div><label style="margin-top:8px">Weight (kg)</label><input id="bw" type="number" inputmode="decimal"></div></div>
+    <div style="margin-top:14px"><span class="big" id="bv">--</span> <span id="bc" style="font-weight:700;font-size:18px"></span></div>
+    <div class="gauge"><i style="width:14%;background:#4f9ad9"></i><i style="width:26%;background:#3fb27f"></i><i style="width:20%;background:#f0a63a"></i><i style="width:40%;background:#d2473c"></i><u id="bm"></u></div>
+    <div class="mu" id="bt"></div>
+    <div class="mu" style="margin-top:10px">Underweight under 18.5 · Normal 18.5–24.9 · Overweight 25–29.9 · Obese 30+. BMI doesn't separate muscle from fat, so muscular people can read high.</div>
+  </div>
+</section>
+
+<section id="p5" class="hide">
+  <div class="card">
+    <div class="mu">My routine</div>
+    <input id="rn" placeholder="Routine name, e.g. Push day" style="margin:8px 0">
+    <div class="mu">Quick start</div>
+    <div class="chips2" id="tpl"></div>
+    <div id="rl"></div>
+    <div class="mu" id="rsum" style="margin-top:8px"></div>
+    <button class="btn" id="rsave">Save routine</button>
+    <button class="btn2" id="rdone">✓ Mark today's workout as done</button>
+    <button class="btn2" id="rclr">Clear</button>
+  </div>
+  <div class="card hide" id="sv"><div class="mu">Saved routines</div><div id="svl"></div></div>
+  <div class="card">
+    <div class="mu">Exercise library · tap Add to build your routine</div>
+    <div class="chips2" id="fc"></div>
+    <div class="grid" id="lib"></div>
+  </div>
+</section>
+<p class="mu" style="text-align:center;font-size:12px;margin:6px 0 28px">Kalo gives estimates, not medical advice. Check with a doctor or dietitian before changing your diet or training. Meal text and photos are sent to an AI service for analysis and are not saved by Kalo. Your data stays in this browser.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let meals=[],goal=2000,photo=null,found=[],plan=null,tdeeV=0,wtV=70,pending=null,water=0,hist={};
+const today=()=>new Date().toISOString().slice(0,10);
+try{const s=JSON.parse(localStorage.getItem("cal")||"null");if(s){hist=s.hist||{};goal=s.goal||2000;plan=s.plan||null;tdeeV=s.tdee||0;wtV=s.w||70;meals=(s.day===today()?s.meals:[])||[];water=s.day===today()?(+s.water||0):0}}catch(e){}
+function save(){try{const t=today(),sm=k=>meals.reduce((a,m)=>a+(+m[k]||0),0);
+  hist[t]=Object.assign({},hist[t],{k:sm("kcal"),p:sm("p"),c:sm("c"),f:sm("f"),w:water,g:goal});
+  Object.keys(hist).sort().slice(0,-30).forEach(k=>delete hist[k]);
+  localStorage.setItem("cal",JSON.stringify({goal,day:t,meals,plan,tdee:tdeeV,w:wtV,water,hist}))}catch(e){}}
+function tab(n){for(let i=1;i<=6;i++){$("p"+i).classList.toggle("hide",i!==n);$("t"+i).classList.toggle("on",i===n)}window.scrollTo(0,0)}
+for(let i=1;i<=6;i++)$("t"+i).onclick=()=>tab(i);$("toscan").onclick=()=>tab(3);
+
+function waterGoal(){return Math.max(1500,Math.round(wtV*35/250)*250)}
+function render(){render0();ov()}
+function render0(){
+  const wg=waterGoal();
+  $("wml").textContent=(water/1000).toFixed(2);$("wgoal").textContent=(wg/1000).toFixed(1);
+  $("wfill").style.height=Math.min(100,water/wg*100)+"%";
+  $("wsub").textContent=water>=wg?"✅ Goal hit!":Math.ceil((wg-water)/250)+" glasses to go";
+  const sum=k=>Math.round(meals.reduce((a,m)=>a+(+m[k]||0),0));
+  const t=sum("kcal");
+  const left=goal-t;
+  const lb=$("lbl"),lf=$("left");
+  lf.textContent=Math.abs(left);
+  lf.style.color=left<0?"#d2473c":left===0?"var(--ac)":"";
+  lb.textContent=left>0?"Calories left today":left===0?"🎉 Goal reached. You're done for today!":"Over your goal by";
+  $("sub").textContent=`${goal} goal − ${t} eaten`;
+  $("fill").style.width=Math.min(100,t/goal*100)+"%";
+  $("fill").style.background=t>goal?"#d2473c":"var(--ac)";
+  const pl=PLANS.find(x=>x.id===plan);
+  const mk=(l,k,tg)=>tg!=null?`${l} ${Math.max(0,tg-sum(k))}g left`:`${l} ${sum(k)}g`;
+  const tg=pl?planCalc(pl):null;
+  $("mac").innerHTML="";
+  [["Protein","p",tg&&tg.P],["Carbs","c",tg&&tg.C],["Fat","f",tg&&tg.F]].forEach(x=>{const sp=document.createElement("span");sp.textContent=mk(x[0],x[1],tg?x[2]:null);$("mac").append(sp)});
+  $("chips").innerHTML="";
+  PLANS.forEach(p=>{
+    const b=document.createElement("button");b.className="chip"+((plan===p.id||pending===p.id)?" on":"");
+    b.textContent=p.n;
+    b.onclick=()=>{
+      if(tdeeV>0){plan=p.id;pending=null;goal=planCalc(p).kcal;save();render();showPlans()}
+      else{pending=p.id;render();tab(2);$("gmsg").textContent=`Nice, ${p.n.replace(/^\S+\s/,"")} it is. Enter your details and tap Calculate to get your daily calorie goal.`}
+    };
+    $("chips").append(b);
+  });
+  $("empty").classList.toggle("hide",meals.length>0);
+  $("log").innerHTML="";
+  meals.forEach((m,i)=>{
+    const d=document.createElement("div");d.className="item";
+    const l=document.createElement("div");
+    const a=document.createElement("div");a.textContent=m.name;
+    const b=document.createElement("div");b.className="mu";b.textContent=`${m.kcal} kcal · P${m.p} C${m.c} F${m.f}`;
+    l.append(a,b);
+    const x=document.createElement("button");x.className="x";x.textContent="✕";x.setAttribute("aria-label","Remove");
+    x.onclick=()=>{meals.splice(i,1);save();render()};
+    d.append(l,x);$("log").append(d);
+  });
+}
+const rnd=n=>Math.round(+n||0);
+
+/* ---- AI via Netlify Function (keeps the API key on the server) ---- */
+function toB64(file){return new Promise((res,rej)=>{
+  const url=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{const m=1280,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
+    c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",0.8).split(",")[1])};
+  im.onerror=()=>{URL.revokeObjectURL(url);const e=new Error("img");e.code="image_rejected";rej(e)};
+  im.src=url})}
+const AI={json:async(prompt,o={})=>{
+  const image=o.images?{data:await toB64(o.images)}:null;
+  let r;try{r=await fetch("/.netlify/functions/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,image})})}catch(e){const x=new Error("net");x.code="network";throw x}
+  if(!r.ok){const e=new Error("ai");e.code=r.status===429?"rate_limited":r.status===400||r.status===413?"image_rejected":"error";throw e}
+  return r.json()}};
+async function getSample(){return AI}
+function friendly(e,fallback){
+  if(!e)return fallback;
+  return e.code==="network"?"Can't reach the server. Check your connection.":e.code==="not_granted"?"Permission to use AI was declined.":e.code==="rate_limited"?"Too many requests. Try again in a bit.":e.code==="image_rejected"?"That image couldn't be read. Try another photo.":e.code==="images_unavailable"?"Photo analysis isn't available in this view.":fallback;
+}
+
+/* ---- text estimate ---- */
+$("go").onclick=async()=>{
+  const q=$("q").value.trim();if(!q)return;
+  $("err").textContent="";
+  const sample=await getSample();
+  if(!sample){$("err").textContent="AI estimation isn't available in this view.";return}
+  $("go").disabled=true;$("go").textContent="Analyzing…";
+  try{
+    const r=await sample.json(`You are a nutrition estimator. Break this meal description into individual food items with realistic portion-based estimates.
+Meal: """${q}"""
+Respond with ONLY JSON: {"items":[{"name":"item with portion","kcal":number,"p":grams protein,"c":grams carbs,"f":grams fat}]}`,{modelTier:"quick",cache:false});
+    const items=(r&&r.items)||[];
+    if(!items.length)throw 0;
+    items.forEach(it=>meals.push({name:String(it.name),kcal:rnd(it.kcal),p:rnd(it.p),c:rnd(it.c),f:rnd(it.f)}));
+    $("q").value="";save();render();
+  }catch(e){$("err").textContent=friendly(e,"Couldn't estimate that. Try rephrasing.")}
+  $("go").disabled=false;$("go").textContent="Estimate calories";
+};
+
+/* ---- photo scan ---- */
+function setPhoto(f){
+  if($("pimg").src.startsWith("blob:"))URL.revokeObjectURL($("pimg").src);
+  photo=f||null;$("serr").textContent="";
+  $("sres").classList.add("hide");found=[];
+  $("pick").classList.toggle("hide",!!photo);$("prev").classList.toggle("hide",!photo);
+  if(photo)$("pimg").src=URL.createObjectURL(photo);
+  try{$("fcam").value="";$("fgal").value=""}catch(e){}
+}
+$("snap").onclick=()=>$("fcam").click();
+$("gal").onclick=()=>$("fgal").click();
+$("fcam").onchange=()=>{if($("fcam").files[0]){setPhoto($("fcam").files[0]);analyze()}};
+$("fgal").onchange=()=>{if($("fgal").files[0]){setPhoto($("fgal").files[0]);analyze()}};
+$("again").onclick=()=>{$("hint").value="";setPhoto(null)};
+$("an").onclick=analyze;
+
+async function analyze(){
+  if(!photo)return;
+  $("serr").textContent="";$("sres").classList.add("hide");
+  const sample=await getSample();
+  if(!sample){$("serr").textContent="AI isn't available in this view.";return}
+  $("an").disabled=true;document.querySelector("#prev .pv").classList.add("scanning");$("an").textContent="Detecting food…";
+  const h=$("hint").value.trim();
+  try{
+    const r=await sample.json(`You are a nutrition estimator. Identify every distinct food and drink in the photo. For each, estimate the WEIGHT in grams of the portion shown (for drinks use ml as grams), using visual cues such as plate or bowl size, utensils, hands, packaging and typical serving sizes. Then give nutrition per 100 g of that food as prepared. If there is no food, return {"items":[]}.${h?`\nThe person adds: """${h}"""`:""}
+Respond with ONLY JSON: {"items":[{"name":"food name","grams":number,"kcal100":number,"p100":number,"c100":number,"f100":number}]}`,{images:photo,modelTier:"default",cache:false});
+    const items=((r&&r.items)||[]).filter(i=>i&&i.name&&+i.grams>0);
+    if(!items.length){$("serr").textContent="I couldn't spot any food. Try a closer, brighter shot.";throw 0}
+    found=items.map(i=>({name:String(i.name),g:rnd(i.grams),k:+i.kcal100||0,p:+i.p100||0,c:+i.c100||0,f:+i.f100||0}));
+    drawScan();
+  }catch(e){if(e)$("serr").textContent=friendly(e,"Couldn't analyze that photo. Try again.")}
+  $("an").disabled=false;document.querySelector("#prev .pv").classList.remove("scanning");$("an").textContent="Detect food & calories";
+}
+function calc(it){const r=it.g/100;return{kcal:rnd(it.k*r),p:rnd(it.p*r),c:rnd(it.c*r),f:rnd(it.f*r)}}
+function totals(){
+  const a=found.map(calc);const s=k=>a.reduce((x,y)=>x+y[k],0);
+  $("stot").textContent=s("kcal");$("sp").textContent=s("p");$("sc2").textContent=s("c");$("sf").textContent=s("f");
+}
+function drawScan(){
+  $("sl").innerHTML="";
+  found.forEach((it,i)=>{
+    const w=document.createElement("div");w.className="sc";
+    const top=document.createElement("div");top.className="top";
+    const nm=document.createElement("span");nm.textContent=it.name;
+    const kc=document.createElement("span");
+    top.append(nm,kc);
+    const am=document.createElement("div");am.className="amt";
+    const mk=document.createElement("button");mk.className="st";mk.textContent="−";
+    const inp=document.createElement("input");inp.type="number";inp.inputMode="numeric";inp.value=it.g;
+    const pl=document.createElement("button");pl.className="st";pl.textContent="+";
+    const u=document.createElement("span");u.className="u";
+    am.append(mk,inp,pl,u);
+    const upd=()=>{const c=calc(it);kc.textContent=c.kcal+" kcal";u.textContent=`g · P${c.p} C${c.c} F${c.f}`;totals()};
+    inp.oninput=()=>{it.g=Math.max(0,+inp.value||0);upd()};
+    mk.onclick=()=>{it.g=Math.max(0,it.g-10);inp.value=it.g;upd()};
+    pl.onclick=()=>{it.g+=10;inp.value=it.g;upd()};
+    w.append(top,am);$("sl").append(w);upd();
+  });
+  $("sres").classList.remove("hide");
+  $("sres").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("addall").onclick=()=>{
+  found.filter(i=>i.g>0).forEach(i=>{const c=calc(i);meals.push({name:`${i.name} (${i.g} g)`,...c})});
+  save();render();$("hint").value="";setPhoto(null);tab(1);
+};
+
+/* ---- goal ---- */
+const PLANS=[
+ {id:"cut",n:"🔥 Lose fat",d:"20% deficit · high protein to keep muscle",adj:-0.2,pr:2.2},
+ {id:"bulk",n:"💪 Bulk",d:"10% surplus · lean muscle gain",adj:0.1,pr:1.8},
+ {id:"recomp",n:"⚖️ Body recomp",d:"Near maintenance (−5%) · lose fat, build muscle",adj:-0.05,pr:2.4}];
+function planCalc(p){
+  const kcal=Math.max(1200,Math.round(tdeeV*(1+p.adj)));
+  const P=Math.round(p.pr*wtV),F=Math.round(kcal*0.25/9);
+  const C=Math.max(0,Math.round((kcal-P*4-F*9)/4));
+  return{kcal,P,C,F};
+}
+function showPlans(){
+  $("tdee").textContent=tdeeV+" kcal";$("res").classList.remove("hide");
+  $("plans").innerHTML="";
+  PLANS.forEach(p=>{
+    const c=planCalc(p);
+    const b=document.createElement("button");b.className="plan"+(plan===p.id?" on":"");
+    const h=document.createElement("div");h.className="h";
+    const n=document.createElement("span");n.textContent=p.n;
+    const k=document.createElement("span");k.className="k";k.textContent=c.kcal+" kcal";
+    h.append(n,k);
+    const d=document.createElement("div");d.className="mu";d.textContent=p.d;
+    const m=document.createElement("div");m.className="mu";m.textContent=`Protein ${c.P} g · Carbs ${c.C} g · Fat ${c.F} g`;
+    b.append(h,d,m);
+    b.onclick=()=>{plan=p.id;goal=c.kcal;save();render();showPlans()};
+    $("plans").append(b);
+  });
+}
+$("calc").onclick=()=>{
+  const w=+$("wt").value,h=+$("ht").value,a=+$("age").value;
+  if(!(w>0&&h>0&&a>0))return;
+  const bmr=10*w+6.25*h-5*a+($("sex").value==="m"?5:-161);
+  tdeeV=Math.round(bmr*+$("act").value);wtV=w;
+  const had=pending;
+  if(pending){plan=pending;pending=null}
+  if(plan){const p=PLANS.find(x=>x.id===plan);if(p)goal=planCalc(p).kcal}
+  $("gmsg").textContent="";
+  save();render();showPlans();
+  if(had)tab(1);
+};
+
+/* ---- BMI ---- */
+try{const b=JSON.parse(localStorage.getItem("bmi")||"null");if(b){$("ht").value=b.h;wtV=b.w}}catch(e){}
+$("wt").value=wtV;$("bh").value=$("ht").value;$("bw").value=wtV;
+function bmiUpd(){
+  const H=+$("bh").value,W=+$("bw").value,h=H/100;
+  if(!(H>0&&W>0)){$("bv").textContent="--";$("bc").textContent="";$("bt").textContent="";return}
+  const b=W/(h*h);
+  const c=b<18.5?["Underweight","#4f9ad9"]:b<25?["Healthy","#3fb27f"]:b<30?["Overweight","#f0a63a"]:["Obese","#d2473c"];
+  $("bv").textContent=b.toFixed(1);$("bc").textContent=c[0];$("bc").style.color=c[1];
+  $("bm").style.left=Math.max(0,Math.min(100,(b-15)/25*100))+"%";
+  const lo=18.5*h*h,hi=24.9*h*h;
+  $("bt").textContent=`Healthy weight for ${H} cm: ${lo.toFixed(1)}–${hi.toFixed(1)} kg. `+(W>hi?`That's about ${(W-hi).toFixed(1)} kg above the range.`:W<lo?`That's about ${(lo-W).toFixed(1)} kg below the range.`:"You're inside the range.");
+}
+["bh","bw"].forEach(id=>$(id).oninput=()=>{
+  $("ht").value=$("bh").value;$("wt").value=$("bw").value;
+  if(+$("bw").value>0)wtV=+$("bw").value;
+  try{localStorage.setItem("bmi",JSON.stringify({h:$("bh").value,w:wtV}))}catch(e){}
+  bmiUpd();render();
+});
+bmiUpd();
+
+/* ---- Workouts ---- */
+const L={t:34,u:28,s:28,a:19,f:19},S0=[0,0,0,0,0,0,0,0,0];
+function pts(p0){
+  const p=p0.slice();if(p[1]==p[3]&&p[2]==p[4]){p[3]-=8;p[4]-=6}if(p[5]==p[7]&&p[6]==p[8]){p[7]-=5;p[8]-=3}
+  const r=d=>d*Math.PI/180,v=(a,l)=>[Math.sin(r(a))*l,Math.cos(r(a))*l];
+  const td=[Math.sin(r(p[0])),-Math.cos(r(p[0]))],N=[td[0]*L.t,td[1]*L.t],H=[0,0];
+  const hd=[N[0]+td[0]*11,N[1]+td[1]*11];
+  const lim=(o,a,b,l1,l2)=>{const k=[o[0]+v(a,l1)[0],o[1]+v(a,l1)[1]];return[o,k,[k[0]+v(b,l2)[0],k[1]+v(b,l2)[1]]]};
+  const q={N,H,hd,arms:[lim(N,p[1],p[2],L.a,L.f),lim(N,p[3],p[4],L.a,L.f)],legs:[lim(H,p[5],p[6],L.u,L.s),lim(H,p[7],p[8],L.u,L.s)]};
+  const all=[N,H,...q.arms.flat(),...q.legs.flat(),[hd[0],hd[1]+8]];
+  q.my=Math.max(...all.map(x=>x[1]));return q;
+}
+function fig(A,B){
+  const P=[pts(A),pts(B)];
+  let x0=1e9,x1=-1e9,y0=1e9;
+  P.forEach(p=>{[p.N,p.H,...p.arms.flat(),...p.legs.flat(),[p.hd[0]-8,p.hd[1]],[p.hd[0]+8,p.hd[1]],[p.hd[0],p.hd[1]-8]].forEach(q=>{const x=q[0]-p.H[0],y=q[1]-p.my;x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y)})});
+  const w=x1-x0,h=-y0,s=Math.min(128/w,84/h,1.3),ox=80-(x0+w/2)*s,oy=104-(0)*s;
+  const grp=(p,c)=>{
+    const T=q=>[(ox+s*(q[0]-p.H[0])).toFixed(1),(oy+s*(q[1]-p.my)).toFixed(1)];
+    const pl=(a,col,o,wd)=>`<polyline points="${a.map(T).join(" ")}" stroke="${col}" opacity="${o}" stroke-width="${(wd*s).toFixed(1)}"/>`;
+    const hc=T(p.hd);
+    return `<g class="${c}" fill="none" stroke-linecap="round" stroke-linejoin="round">${pl(p.arms[1],"var(--ac)",.45,5)}${pl(p.legs[1],"var(--tx)",.4,6)}${pl([p.H,p.N],"var(--ac)",1,7)}${pl(p.legs[0],"var(--tx)",1,6)}${pl(p.arms[0],"var(--ac)",1,5)}<circle cx="${hc[0]}" cy="${hc[1]}" r="${(8*s).toFixed(1)}" fill="var(--card)" stroke="var(--tx)" stroke-width="2.5"/></g>`;
+  };
+  return `<svg viewBox="0 0 160 120" role="img"><line x1="14" y1="${oy+3}" x2="146" y2="${oy+3}" stroke="var(--ln)" stroke-width="3" stroke-linecap="round"/>${grp(P[0],"fa")}${grp(P[1],"fb")}</svg>`;
+}
+/* id,name,category,muscles,how-to,sets,reps,unit,poseA,poseB */
+const EX=[
+["pu","Push-up","Chest","Chest, triceps, shoulders","Hands under shoulders, body in a straight line. Lower your chest, then press up.",3,12,"reps",[65,0,0,0,0,-65,-65,-65,-65],[78,-60,60,-60,60,-78,-78,-78,-78]],
+["sq","Squat","Legs","Quads, glutes","Feet shoulder-width, chest up. Sit back and down until thighs are parallel, then stand.",3,15,"reps",S0,[25,90,90,90,90,80,-10,80,-10]],
+["lu","Lunge","Legs","Quads, glutes, hamstrings","Step forward, drop the back knee toward the floor, push back to standing.",3,10,"reps",S0,[0,0,0,0,0,85,-5,-20,-82]],
+["dl","Deadlift","Back","Hamstrings, glutes, back","Hinge at the hips with a flat back, lower the weight along your legs, then stand tall.",3,8,"reps",S0,[70,0,0,0,0,15,-10,15,-10]],
+["op","Overhead press","Shoulders","Shoulders, triceps","Start with weights at shoulder height, press straight overhead, lower with control.",3,10,"reps",[0,20,180,20,180,0,0,0,0],[0,180,180,180,180,0,0,0,0]],
+["bc","Bicep curl","Biceps","Biceps","Elbows pinned to your sides. Curl the weights up, lower slowly.",3,12,"reps",S0,[0,10,120,10,120,0,0,0,0]],
+["br","Bent-over row","Back","Back, biceps","Hinge forward with a flat back, pull the weights toward your ribs, lower slowly.",3,10,"reps",[65,0,0,0,0,10,-10,10,-10],[65,-55,-5,-55,-5,10,-10,10,-10]],
+["gb","Glute bridge","Legs","Glutes, hamstrings","Lie on your back, knees bent. Drive your hips up until knees, hips and shoulders line up.",3,15,"reps",[-90,90,90,90,90,125,55,125,55],[-115,100,100,100,100,120,10,120,10]],
+["pk","Plank","Core","Abs, shoulders, glutes","Forearms on the floor, body in one straight line. Brace your abs and hold.",3,30,"sec",[78,0,90,0,90,-78,-78,-78,-78],[80,0,90,0,90,-80,-80,-80,-80]],
+["cr","Crunch","Core","Abs","Lie on your back, knees bent. Curl your shoulders off the floor, lower slowly.",3,15,"reps",[-90,100,100,100,100,125,55,125,55],[-55,100,100,100,100,125,55,125,55]],
+["lr","Leg raise","Core","Lower abs, hip flexors","Lie flat, legs straight. Raise them to vertical, then lower without touching the floor.",3,12,"reps",[-90,90,90,90,90,90,90,90,90],[-90,90,90,90,90,175,175,175,175]],
+["rt","Russian twist","Core","Obliques, abs","Sit leaning back with feet raised. Rotate your arms side to side.",3,20,"reps",[-35,100,100,100,100,125,125,125,125],[-35,60,60,60,60,125,125,125,125]],
+["rn","Running","Cardio","Legs, heart","Run at a steady pace, landing under your hips with relaxed shoulders and swinging arms.",1,20,"min",[12,-45,40,50,140,60,-15,-30,-110],[12,50,140,-45,40,-30,-110,60,-15]],
+["hk","High knees","Cardio","Hip flexors, calves, heart","Run in place, driving each knee to hip height and pumping your arms.",3,30,"sec",[5,-40,30,40,120,100,0,0,0],[5,40,120,-40,30,0,0,100,0]],
+["sb","Shadow boxing","Cardio","Shoulders, core, heart","Staggered stance, hands up. Throw fast straight punches, rotating your hips.",3,60,"sec",[0,20,150,20,150,25,10,-25,-15],[8,90,90,20,150,25,10,-25,-15]],
+["jj","Jumping jacks","HIIT","Full body, heart","Jump feet apart while swinging arms overhead, then jump back together.",4,30,"sec",S0,[0,150,150,-150,-150,25,25,-25,-25]],
+["mc","Mountain climbers","HIIT","Core, shoulders, legs","From a high plank, drive your knees toward your chest one after the other, fast.",4,30,"sec",[65,0,0,0,0,-65,-65,-65,-65],[65,0,0,0,0,75,-20,-65,-65]],
+["qs","Quad stretch","Stretch","Quads","Stand tall, pull one heel to your glute, keep knees together. Hold, then switch.",2,30,"sec",S0,[0,-25,-125,0,0,-5,-145,0,0]],
+["ff","Forward fold","Stretch","Hamstrings, lower back","Hinge at the hips and let your upper body hang toward the floor. Soft knees.",2,30,"sec",S0,[150,0,0,0,0,0,0,0,0]],
+["co","Cobra","Stretch","Abs, spine, chest","Lie face down, press your chest up with hands under shoulders. Hips stay down.",2,30,"sec",[88,-10,60,-10,60,-88,-88,-88,-88],[50,0,60,0,60,-85,-85,-85,-85]],
+["wr","Warrior pose","Stretch","Legs, hips, shoulders","Deep lunge, front knee over ankle. Raise your arms overhead, then open them wide.",2,30,"sec",[0,180,180,180,180,60,-5,-40,-40],[0,90,90,-90,-90,60,-5,-40,-40]],
+["tr","Tree pose","Stretch","Balance, hips, core","Stand on one leg, sole of the other foot on your inner calf or thigh. Raise your arms.",2,30,"sec",[0,40,150,40,150,0,0,70,-70],[0,170,170,170,170,0,0,70,-70]]
+,
+["bp","Barbell bench press","Chest","Pecs, triceps, front delts","Lie on a bench, lower the bar to mid-chest, press it back up over your shoulders.",4,8,"reps",[-90,100,175,100,175,125,55,125,55],[-90,180,180,180,180,125,55,125,55]],
+["ip","Incline dumbbell press","Chest","Upper chest, shoulders","Bench at 30–45°. Lower the dumbbells beside your chest, press up and slightly together.",3,10,"reps",[-40,100,175,100,175,90,5,90,5],[-40,170,175,170,175,90,5,90,5]],
+["df","Dumbbell fly","Chest","Pecs","Lie flat, arms nearly straight. Open them wide in an arc, then squeeze back over your chest.",3,12,"reps",[-90,180,180,180,180,125,55,125,55],[-90,-115,-115,-115,-115,125,55,125,55]],
+["cx","Cable crossover","Chest","Pecs (inner chest)","Cables set high. Step forward and sweep your hands down and together in front of you.",3,12,"reps",[15,-120,-120,-120,-120,20,5,-20,-10],[15,40,40,40,40,20,5,-20,-10]],
+["cd","Chest dips","Chest","Lower chest, triceps, shoulders","On parallel bars lean forward and lower until elbows hit 90°, then press up.",3,10,"reps",[15,0,0,0,0,15,-115,10,-105],[22,-35,10,-35,10,15,-115,10,-105]],
+["wp","Wide push-up","Chest","Outer chest, shoulders","Push-up with hands wider than your shoulders. Same motion, more chest.",3,12,"reps",[65,0,0,0,0,-65,-65,-65,-65],[78,-60,60,-60,60,-78,-78,-78,-78]],
+["dp","Decline push-up","Chest","Upper chest, shoulders","Feet on a bench, hands on the floor. Lower your chest, press back up.",3,10,"reps",[100,0,0,0,0,-100,-100,-100,-100],[112,-60,60,-60,60,-112,-112,-112,-112]],
+["ic","Incline push-up","Chest","Lower chest, shoulders (easier)","Hands on a bench or counter, body straight. Lower your chest to it, press away.",3,15,"reps",[41,0,0,0,0,-41,-41,-41,-41],[57,-60,60,-60,60,-57,-57,-57,-57]],
+["pl","Pull-up","Back","Lats, biceps, upper back","Hang from a bar, palms away. Pull your chest to the bar, lower under control.",3,6,"reps",[0,180,180,180,180,5,-20,0,-15],[0,-10,175,-10,175,5,-20,0,-15]],
+["ld","Lat pulldown","Back","Lats, biceps","Seated, pull the bar down to your upper chest, elbows driving down. Return slowly.",3,10,"reps",[-10,175,175,175,175,90,0,90,0],[-10,10,160,10,160,90,0,90,0]],
+["sr","Seated cable row","Back","Mid-back, lats, biceps","Sit tall, pull the handle to your belly and squeeze shoulder blades together.",3,12,"reps",[12,90,90,90,90,95,95,95,95],[-8,-60,60,-60,60,95,95,95,95]],
+["ar","One-arm dumbbell row","Back","Lats, rhomboids, biceps","One hand on a bench, back flat. Row the dumbbell to your hip, lower slowly.",3,10,"reps",[80,0,0,0,0,-15,-8,-20,-60],[80,-60,-10,0,0,-15,-8,-20,-60]],
+["sm","Superman","Back","Lower back, glutes","Lie face down. Lift arms, chest and legs off the floor together, hold, lower.",3,12,"reps",[90,90,90,90,90,-90,-90,-90,-90],[70,120,120,120,120,-120,-120,-120,-120]],
+["lt","Lateral raise","Shoulders","Side delts","Dumbbells at your sides. Raise arms out to shoulder height with soft elbows, lower slowly.",3,12,"reps",S0,[0,90,90,-90,-90,0,0,0,0]],
+["fr","Front raise","Shoulders","Front delts","Raise the weights straight in front of you to shoulder height, lower slowly.",3,12,"reps",S0,[0,90,90,90,90,0,0,0,0]],
+["am","Arnold press","Shoulders","All three delt heads","Start palms facing you at chest height, rotate your palms out as you press overhead.",3,10,"reps",[0,60,175,60,175,0,0,0,0],[0,180,180,180,180,0,0,0,0]],
+["rf","Rear delt fly","Shoulders","Rear delts, upper back","Hinge forward, arms hanging. Raise the weights out and back, squeezing your shoulder blades.",3,12,"reps",[70,0,0,0,0,10,-10,10,-10],[70,-35,-35,-35,-35,10,-10,10,-10]],
+["fp","Face pull","Shoulders","Rear delts, rotator cuff","Cable at face height. Pull the rope toward your face, elbows high and wide.",3,15,"reps",[0,90,90,90,90,15,5,-15,-10],[0,20,170,20,170,15,5,-15,-10]],
+["ur","Upright row","Shoulders","Side delts, traps","Hold the bar at your thighs. Pull it up along your body, elbows leading, to chest height.",3,10,"reps",S0,[0,90,-30,90,-30,0,0,0,0]],
+["pp","Pike push-up","Shoulders","Shoulders, triceps","Hips high in an upside-down V. Bend your elbows to lower your head toward the floor, press up.",3,8,"reps",[135,0,0,0,0,-15,-15,-15,-15],[125,-50,40,-50,40,-20,-20,-20,-20]],
+["hc","Hammer curl","Biceps","Biceps, forearms","Palms facing each other. Curl one dumbbell up without swinging, lower, then switch arms.",3,10,"reps",S0,[0,0,125,0,0,0,0,0,0]],
+["cc","Concentration curl","Biceps","Biceps peak","Seated, elbow braced on your inner thigh. Curl the dumbbell up and squeeze at the top.",3,10,"reps",[45,10,0,60,60,80,0,80,0],[45,10,150,60,60,80,0,80,0]],
+["pc","Preacher curl","Biceps","Lower biceps","Arms resting on the pad. Curl the bar up, lower until your arms are almost straight.",3,10,"reps",[20,45,45,45,45,90,5,90,5],[20,45,170,45,170,90,5,90,5]],
+["ib","Incline dumbbell curl","Biceps","Long head of biceps","Recline on an incline bench with arms hanging behind you. Curl up, lower fully.",3,10,"reps",[-35,0,0,0,0,90,5,90,5],[-35,0,150,0,150,90,5,90,5]],
+["bd","Bench dips","Triceps","Triceps, front delts","Hands on a bench behind you, legs forward. Lower until elbows reach 90°, press up.",3,12,"reps",[-8,-8,-8,-8,-8,75,5,75,5],[-8,-70,10,-70,10,75,5,75,5]],
+["sk","Skull crushers","Triceps","Triceps (long head)","Lie down, elbows pointing up. Bend at the elbows to lower the bar to your forehead, extend.",3,10,"reps",[-90,180,180,180,180,125,55,125,55],[-90,180,-50,180,-50,125,55,125,55]],
+["oe","Overhead tricep extension","Triceps","Triceps (long head)","Hold one weight overhead. Bend elbows to lower it behind your head, then extend.",3,12,"reps",[0,180,180,180,180,0,0,0,0],[0,180,-30,180,-30,0,0,0,0]],
+["tp","Tricep pushdown","Triceps","Triceps","Elbows pinned to your sides. Push the cable bar down until your arms are straight.",3,12,"reps",[8,5,100,5,100,15,5,-15,-10],[8,5,5,5,5,15,5,-15,-10]],
+["kb","Tricep kickback","Triceps","Triceps","Hinge forward, upper arm parallel to the floor. Extend the forearm back, squeeze, return.",3,12,"reps",[70,-85,0,0,0,10,-10,10,-10],[70,-85,-90,0,0,10,-10,10,-10]],
+["dm","Diamond push-up","Triceps","Triceps, inner chest","Hands together under your chest, thumbs and fingers forming a diamond. Lower, press up.",3,10,"reps",[65,0,0,0,0,-65,-65,-65,-65],[78,-60,60,-60,60,-78,-78,-78,-78]],
+["cg","Close-grip bench press","Triceps","Triceps, inner chest","Bench press with hands shoulder-width apart and elbows tucked close to your sides.",3,8,"reps",[-90,100,175,100,175,125,55,125,55],[-90,180,180,180,180,125,55,125,55]]
+];
+const CATS=["All","Chest","Back","Shoulders","Biceps","Triceps","Legs","Core","Cardio","HIIT","Stretch"],MET={Chest:5,Back:5,Shoulders:4.5,Biceps:4,Triceps:4,Legs:5.5,Core:4,Cardio:8,HIIT:9,Stretch:2.5};
+const TPL=[["Full body",["sq","pu","br","lu","pk"]],["Push",["bp","ip","lt","op","tp"]],["Pull",["pl","ld","sr","ar","bc"]],["Arms",["bc","hc","pc","sk","oe","kb"]],["Core",["pk","cr","lr","rt"]],["HIIT",["jj","mc","hk","sq"]],["Stretch",["qs","ff","co","wr","tr"]]];
+const ex=id=>EX.find(e=>e[0]===id);
+const fg={};const img=id=>fg[id]||(fg[id]=fig(ex(id)[8],ex(id)[9]));
+let cur=[],saved=[],filt="All";
+try{const w=JSON.parse(localStorage.getItem("wk")||"null");if(w){cur=w.cur||[];saved=w.saved||[];$("rn").value=w.name||""}}catch(e){}
+function wsave(){try{localStorage.setItem("wk",JSON.stringify({cur,saved,name:$("rn").value}))}catch(e){}}
+function est(items){
+  let sec=0,kc=0;
+  items.forEach(i=>{const e=ex(i.id);const t=(e[7]==="reps"?i.reps*3:e[7]==="min"?i.reps*60:i.reps)*i.sets+(i.sets>1?(i.sets-1)*45:0);sec+=t;kc+=(MET[e[2]]||4)*wtV*t/3600});
+  return{min:Math.max(1,Math.round(sec/60)),kc:Math.round(kc)};
+}
+const unit=e=>e[7]==="reps"?"reps":e[7];
+function drawRoutine(){
+  const box=$("rl");box.innerHTML="";
+  if(!cur.length){const d=document.createElement("div");d.className="mu";d.style.margin="10px 0";d.textContent="Empty. Pick a quick start or tap Add on any exercise below.";box.append(d)}
+  cur.forEach((it,i)=>{
+    const e=ex(it.id),row=document.createElement("div");row.className="ri";
+    row.innerHTML=img(it.id);
+    const inn=document.createElement("div");inn.className="in";
+    const nm=document.createElement("b");nm.textContent=e[1];
+    const ctl=document.createElement("div");ctl.className="ctl";
+    const mkb=(t,f,al)=>{const b=document.createElement("button");b.textContent=t;b.setAttribute("aria-label",al);b.onclick=()=>{f();wsave();drawRoutine()};return b};
+    const lab=t=>{const s=document.createElement("span");s.textContent=t;return s};
+    const rs=e[7]==="min"?1:e[7]==="sec"?5:1;
+    ctl.append(mkb("−",()=>it.sets=Math.max(1,it.sets-1),"Fewer sets"),lab(it.sets+" sets"),mkb("+",()=>it.sets++,"More sets"),lab("×"),mkb("−",()=>it.reps=Math.max(1,it.reps-rs),"Fewer reps"),lab(it.reps+" "+unit(e)),mkb("+",()=>it.reps+=rs,"More reps"));
+    const c2=document.createElement("div");c2.className="ctl";
+    c2.append(mkb("↑",()=>{if(i>0)[cur[i-1],cur[i]]=[cur[i],cur[i-1]]},"Move up"),mkb("↓",()=>{if(i<cur.length-1)[cur[i+1],cur[i]]=[cur[i],cur[i+1]]},"Move down"),mkb("✕",()=>cur.splice(i,1),"Remove"));
+    inn.append(nm,ctl,c2);row.append(inn);box.append(row);
+  });
+  const t=est(cur);
+  $("rsum").textContent=cur.length?`${cur.length} exercises · about ${t.min} min · ~${t.kc} kcal burned (rough estimate)`:"";
+  $("rsave").disabled=!cur.length;$("rdone").disabled=!cur.length;
+}
+function addEx(id){const f=cur.find(x=>x.id===id);if(f)f.sets++;else{const e=ex(id);cur.push({id,sets:e[5],reps:e[6]})}wsave();drawRoutine()}
+function drawLib(){
+  $("fc").innerHTML="";
+  CATS.forEach(c=>{const b=document.createElement("button");b.className="chip"+(c===filt?" on":"");b.textContent=c;b.onclick=()=>{filt=c;drawLib()};$("fc").append(b)});
+  $("lib").innerHTML="";
+  EX.filter(e=>filt==="All"||e[2]===filt).forEach((e,ix)=>{
+    const d=document.createElement("div");d.className="ex";d.style.setProperty("--i",ix%12);
+    d.innerHTML=img(e[0]);
+    const n=document.createElement("b");n.textContent=e[1];
+    const m=document.createElement("div");m.className="mu";m.textContent=e[2]+" · "+e[3];
+    const h=document.createElement("div");h.className="mu";h.textContent=e[4];
+    const a=document.createElement("button");a.textContent="+ Add · "+e[5]+"×"+e[6]+(e[7]==="reps"?"":" "+e[7]);a.onclick=()=>addEx(e[0]);
+    d.append(n,m,h,a);$("lib").append(d);
+  });
+}
+function drawSaved(){
+  $("sv").classList.toggle("hide",!saved.length);$("svl").innerHTML="";
+  saved.forEach((r,i)=>{
+    const d=document.createElement("div");d.className="sv";
+    const l=document.createElement("div");
+    const a=document.createElement("b");a.textContent=r.name;
+    const b=document.createElement("div");b.className="mu";const t=est(r.items);b.textContent=`${r.items.length} exercises · ~${t.min} min`;
+    l.append(a,b);
+    const bt=document.createElement("div");
+    const ld=document.createElement("button");ld.textContent="Load";ld.onclick=()=>{cur=JSON.parse(JSON.stringify(r.items));$("rn").value=r.name;wsave();drawRoutine();window.scrollTo(0,0)};
+    const dl=document.createElement("button");dl.textContent="✕";dl.setAttribute("aria-label","Delete routine");dl.onclick=()=>{saved.splice(i,1);wsave();drawSaved()};
+    bt.append(ld,dl);d.append(l,bt);$("svl").append(d);
+  });
+}
+TPL.forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t[0];b.onclick=()=>{cur=t[1].map(id=>{const e=ex(id);return{id,sets:e[5],reps:e[6]}});if(!$("rn").value)$("rn").value=t[0];wsave();drawRoutine()};$("tpl").append(b)});
+$("rsave").onclick=()=>{
+  if(!cur.length)return;
+  const name=$("rn").value.trim()||"My routine";
+  const i=saved.findIndex(r=>r.name===name),r={name,items:JSON.parse(JSON.stringify(cur))};
+  if(i>=0)saved[i]=r;else saved.push(r);
+  wsave();drawSaved();$("rsave").textContent="Saved ✓";setTimeout(()=>$("rsave").textContent="Save routine",1500);
+};
+$("rdone").onclick=()=>{
+  if(!cur.length)return;const t=today(),h=hist[t]||{};
+  hist[t]=Object.assign({},h,{wk:(h.wk||0)+1,b:(h.b||0)+est(cur).kc});
+  save();render();confetti();$("rdone").textContent="Logged ✓ Nice work!";setTimeout(()=>$("rdone").textContent="✓ Mark today's workout as done",2000);
+};
+$("rclr").onclick=()=>{cur=[];$("rn").value="";wsave();drawRoutine()};
+$("rn").oninput=wsave;
+drawRoutine();drawLib();drawSaved();
+
+/* ---- Overview ---- */
+const dkey=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10)};
+let wHit=null;
+function ov(){
+  const t=today(),eaten=meals.reduce((a,m)=>a+(+m.kcal||0),0),left=goal-eaten,wg=waterGoal(),h=hist[t]||{};
+  const circ=326.7;$("rg").style.strokeDashoffset=circ*(1-Math.min(1,eaten/goal));$("rg").style.stroke=left<0?"#ff5d5d":"";
+  $("rgv").textContent=Math.abs(left);$("rgl").textContent=left>=0?"kcal left":"kcal over";
+  if(wHit===false&&water>=wg)confetti();wHit=water>=wg;
+  $("ovdate").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+  const tile=(n,label,val,sub,pct,col)=>{
+    const b=document.createElement("button");b.className="tile";b.onclick=()=>tab(n);
+    const l=document.createElement("div");l.className="mu";l.textContent=label;
+    const v=document.createElement("div");v.className="v";v.textContent=val;if(col)v.style.color=col;
+    const br=document.createElement("div");br.className="bar";const i=document.createElement("i");i.style.width=Math.max(0,Math.min(100,pct))+"%";i.style.background=col||"var(--ac)";br.append(i);
+    const s2=document.createElement("div");s2.className="mu";s2.style.fontSize="12px";s2.textContent=sub;
+    b.append(l,v,br,s2);return b;
+  };
+  const H=+$("bh").value,W=+$("bw").value,bm=H>0&&W>0?W/((H/100)*(H/100)):0;
+  const bc=bm<18.5?["Underweight","#4f9ad9"]:bm<25?["Healthy","#3fb27f"]:bm<30?["Overweight","#f0a63a"]:["Obese","#d2473c"];
+  const sess=h.wk||0;
+  const g=$("ovg");g.innerHTML="";
+  g.append(
+    tile(1,"Calories",Math.abs(left).toLocaleString(),left>=0?`kcal left · ${eaten} of ${goal}`:`kcal over · goal ${goal}`,eaten/goal*100,left<0?"#d2473c":""),
+    tile(1,"Water",(water/1000).toFixed(2)+" L",`of ${(wg/1000).toFixed(1)} L goal`,water/wg*100,"#3b9ae1"),
+    tile(5,"Workout",sess?"✓ Done":"Not yet",sess?`${sess} session${sess>1?"s":""} · ~${h.b||0} kcal`:cur.length?`${cur.length} exercises ready`:"Build a routine",sess?100:0,sess?"":"var(--mu)"),
+    tile(4,"BMI",bm?bm.toFixed(1):"--",bm?bc[0]:"Add height & weight",bm?(bm-15)/25*100:0,bm?bc[1]:"var(--mu)")
+  );
+  const pl=PLANS.find(x=>x.id===plan),tg=pl?planCalc(pl):null;
+  $("ovplan").textContent=pl?"· "+pl.n:"· no plan yet";
+  const sm=k=>meals.reduce((a,m)=>a+(+m[k]||0),0);
+  $("ovm").innerHTML="";
+  [["Protein","p",tg&&tg.P],["Carbs","c",tg&&tg.C],["Fat","f",tg&&tg.F]].forEach(x=>{
+    const v=sm(x[1]),r=document.createElement("div");r.className="mrow";
+    const tp=document.createElement("div");tp.className="top";
+    const a=document.createElement("span");a.textContent=x[0];const b=document.createElement("span");b.className="mu";b.textContent=v+" g"+(x[2]?" / "+x[2]+" g":"");
+    tp.append(a,b);
+    const br=document.createElement("div");br.className="bar";const i=document.createElement("i");i.style.width=(x[2]?Math.min(100,v/x[2]*100):0)+"%";br.append(i);
+    r.append(tp,br);$("ovm").append(r);
+  });
+  if(!pl){const d=document.createElement("div");d.className="mu";d.textContent="Pick a plan on the Meals tab to see macro targets.";$("ovm").append(d)}
+  const days=[6,5,4,3,2,1,0].map(n=>{const k=dkey(n),e=n===0?{k:eaten,w:water,g:goal,wk:h.wk,b:h.b}:(hist[k]||{});return{k,n,e}});
+  const chart=(box,vals,refs,colf)=>{const sg=JSON.stringify([vals,refs,days.map(d=>d.k)]);if(box._sg===sg)return;box._sg=sg;
+    box.innerHTML="";
+    days.forEach((d,i)=>{
+      const c=document.createElement("div"),b=document.createElement("i"),l=document.createElement("span");
+      const v=vals[i],r=refs[i]||1;
+      b.style.height=v>0?Math.min(60,Math.max(4,v/r*46))+"px":"3px";
+      b.style.background=v>0?colf(v,r):"var(--tr)";
+      l.textContent=new Date(d.k+"T12:00:00").toLocaleDateString(undefined,{weekday:"narrow"});
+      if(d.n===0)l.style.fontWeight="800";
+      c.append(b,l);box.append(c);
+    });
+  };
+  chart($("ovh"),days.map(d=>+d.e.k||0),days.map(d=>+d.e.g||goal),(v,r)=>v>r*1.05?"#d2473c":"var(--ac)");
+  chart($("ovw"),days.map(d=>+d.e.w||0),days.map(()=>wg),()=>"#3b9ae1");
+  const lg=days.filter(d=>(+d.e.k||0)>0);
+  const avg=lg.length?Math.round(lg.reduce((a,d)=>a+d.e.k,0)/lg.length):0;
+  const wk=days.reduce((a,d)=>a+(+d.e.wk||0),0),bn=days.reduce((a,d)=>a+(+d.e.b||0),0);
+  $("ovhs").textContent=lg.length?`Avg ${avg} kcal/day · ${lg.length}/7 days logged · ${wk} workout${wk===1?"":"s"} (~${bn} kcal burned)`:"Log a meal to start your history.";
+  const wl=days.filter(d=>(+d.e.w||0)>0),hit=days.filter(d=>(+d.e.w||0)>=wg).length;
+  $("ovws").textContent=wl.length?`Water goal hit ${hit}/7 days`:"Tap + on the Meals tab to log water.";
+}
+$("qa1").onclick=()=>tab(1);$("qa2").onclick=()=>tab(3);$("qa4").onclick=()=>tab(5);
+$("qa3").onclick=()=>{water+=250;save();render()};
+
+/* ---- Motion: count-up numbers + confetti ---- */
+const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+function countUp(el){
+  const t=el.textContent;if(t===el._set)return;
+  const to=parseFloat(t.replace(/,/g,""));if(isNaN(to)||RM){el._cur=to;return}
+  const dec=(t.split(".")[1]||"").length,from=isNaN(el._cur)||el._cur===undefined?0:el._cur;
+  if(from===to){el._cur=to;return}
+  cancelAnimationFrame(el._raf);const st=performance.now();
+  const step=now=>{const k=Math.min(1,(now-st)/750),v=from+(to-from)*(1-Math.pow(1-k,3));
+    el._set=k<1?v.toFixed(dec):t;el.textContent=el._set;el._cur=k<1?v:to;if(k<1)el._raf=requestAnimationFrame(step)};
+  el._raf=requestAnimationFrame(step);
+}
+const cuObs=new MutationObserver(r=>{const seen=new Set();r.forEach(x=>{const el=x.target.nodeType===3?x.target.parentNode:x.target;if(!seen.has(el)){seen.add(el);countUp(el)}})});
+["left","stot","wml","bv","rgv"].forEach(id=>cuObs.observe($(id),{childList:true,characterData:true,subtree:true}));
+function confetti(){
+  if(RM)return;
+  const c=document.createElement("canvas");c.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99";
+  c.width=innerWidth;c.height=innerHeight;document.body.append(c);
+  const g=c.getContext("2d"),cols=["#3ddc97","#7c5cff","#26c6da","#ffd166","#ff6b6b"];
+  const P=Array.from({length:150},()=>({x:innerWidth/2,y:innerHeight*.35,vx:(Math.random()-.5)*15,vy:-Math.random()*13-4,s:4+Math.random()*5,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[Math.random()*5|0]}));
+  let t=0;(function f(){t++;g.clearRect(0,0,c.width,c.height);
+    P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);g.restore()});
+    if(t<140)requestAnimationFrame(f);else c.remove()})();
+}
+$("wp").onclick=()=>{water+=250;save();render()};
+$("wm").onclick=()=>{water=Math.max(0,water-250);save();render()};
+render();
+if(tdeeV>0)showPlans();
+</script>
+</body>
+</html>
