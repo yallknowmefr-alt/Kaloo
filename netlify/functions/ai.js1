@@ -1,0 +1,39 @@
+//Netlify Function: proxies meal-estimate requests to the Anthropic API. // Set ANTHROPIC_API_KEY in Netlify Site settings Environment variables. const MODEL = process.env.ANTHROPIC MODEL || "claude-sonnet-5-5":
+
+const json = (statusCode, body) => ({
+
+}); statusCode, headers: ['Content-Type": "application/json"), body: JSON.stringify(body),
+
+exports.handler = async (event) => { if (event.httpMethod!== "POST") return json (405, (error: "Method not allowed")); if (!process.env. ANTHROPIC API KEY) return json (500, (error: "Server not configured" });
+
+let b; try [b JSON.parse(event.body || "{}"); } catch { return json (400, (error: "Bad JSON" }}; }
+
+const prompt-String(b.prompt || ").slice(0, 4000); if (!prompt) return json (400, (error: "Missing prompt" });
+
+const content= if (b.image && b.image.data) { if (b.image.data.length > 4_500_000) return json(413, (error: 'Image too large")); content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: b.image.data)});
+
+} content.push({ type: "text", text: prompt + "\n\nReply with a single JSON object only, no other text. });
+
+let res; try {
+
+res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST",
+
+headers: {
+
+} "Content-Type": "application/json", "x-api-key": process.env.ANTHROPIC API KEY, "anthropic-version": "2023-06-01"
+
+body: JSON.stringify({ model: MODEL, max_tokens: 1000, messages: [{ role: "user", });
+
+content }] }),
+
+} catch {return json(502, [error: "Upstream unreachable" }); }
+
+if (res.status==429) return json(429, [error: "Rate limited" }); if (!res.ok) return json(502, (error: "Upstream error" });
+
+const data = await res.json();
+
+const text = (data.content || []).map((c) => (c.type === "text"? c.text: "")).join("");
+
+const m text.replace(/json/g. ").match(/\{[\s\S]*\]/);
+
+1
