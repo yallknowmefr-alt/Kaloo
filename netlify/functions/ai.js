@@ -56,19 +56,26 @@ async function callGemini(prompt, image) {
     }),
   });
   let last;
-  for (const model of await geminiModels()) {
-    let res = await send(model, true);
-    if (res.status === 400) res = await send(model, false); // some newer models reject thinkingBudget
-    if (res.ok) {
-      const d = await res.json();
-      const text = ((d.candidates || [])[0]?.content?.parts || []).map((p) => p.text || "").join("");
-      return { ok: true, status: 200, text };
+  const started = Date.now();
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const retryable = (c) => c === 404 || c === 429 || c === 500 || c === 503; // try again / try another model
+  for (const model of (await geminiModels()).slice(0, 4)) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let res = await send(model, true);
+      if (res.status === 400) res = await send(model, false); // some newer models reject thinkingBudget
+      if (res.ok) {
+        const d = await res.json();
+        const text = ((d.candidates || [])[0]?.content?.parts || []).map((p) => p.text || "").join("");
+        return { ok: true, status: 200, text };
+      }
+      const raw = await res.text().catch(() => "");
+      console.error(`Gemini error ${res.status} (model ${model}, try ${attempt + 1}):`, raw.slice(0, 500));
+      let msg = ""; try { msg = JSON.parse(raw).error.message; } catch { msg = raw.slice(0, 160); }
+      last = { ok: false, status: res.status, detail: msg };
+      if (res.status === 503 && attempt === 0 && Date.now() - started < 5000) { await sleep(700); continue; } // brief overload: retry once
+      break;
     }
-    const raw = await res.text().catch(() => "");
-    console.error(`Gemini error ${res.status} (model ${model}):`, raw.slice(0, 500));
-    let msg = ""; try { msg = JSON.parse(raw).error.message; } catch { msg = raw.slice(0, 160); }
-    last = { ok: false, status: res.status, detail: msg };
-    if (res.status !== 404) break; // only try the next model when this one wasn't found
+    if (!retryable(last.status) || Date.now() - started > 8000) break; // auth/bad-request errors won't improve with another model
   }
   return last;
 }
@@ -131,6 +138,7 @@ exports.handler = async (event) => {
 
   if (!r.ok) {
     if (r.status === 429) return json(429, { error: "Rate limited", detail: r.detail });
+    if (r.status === 503) return json(503, { error: "Busy", detail: r.detail });
     return json(502, { error: "Upstream error", status: r.status, detail: String(r.detail || "").slice(0, 200) });
   }
   const m = String(r.text).replace(/```json|```/g, "").match(/\{[\s\S]*\}/);
