@@ -558,8 +558,8 @@ function friendly0(e,fallback){
   if(!e)return fallback;
   if(e.code==="auth")return"Please sign in again to use AI estimates (your session may have expired).";
   if(e.code==="not_found")return"The AI function isn't deployed. Make sure the netlify folder is in your GitHub repo, then redeploy.";
-  if(e.code==="not_configured")return"The server has no API key yet. Add ANTHROPIC_API_KEY in Netlify, then redeploy.";
-  if(e.code==="upstream")return"The AI service returned an error. Check your API key, credits and model in Netlify → Logs → Functions.";
+  if(e.code==="not_configured")return"The AI isn\'t set up on the server yet. Add a free GEMINI_API_KEY in Netlify, then redeploy.";
+  if(e.code==="upstream")return"The AI service returned an error. Check your AI key and limits (details below), or see Netlify → Logs → Functions.";
   return e.code==="network"?"Can't reach the server. Check your connection.":e.code==="not_granted"?"Permission to use AI was declined.":e.code==="rate_limited"?"Too many requests. Try again in a bit.":e.code==="image_rejected"?"That image couldn't be read. Try another photo.":e.code==="images_unavailable"?"Photo analysis isn't available in this view.":fallback;
 }
 
