@@ -1,8 +1,16 @@
-// Netlify Function: proxies meal-estimate requests to the Anthropic API.
-// Set ANTHROPIC_API_KEY in Netlify → Site configuration → Environment variables.
-const MODELS = [process.env.ANTHROPIC_MODEL, "claude-sonnet-5-5", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"]
-  .filter(Boolean)
-  .filter((m, i, a) => a.indexOf(m) === i);
+// Netlify Function: sends meal-estimate requests to an AI provider.
+// Provider is chosen by which key you set in Netlify → Environment variables:
+//   GEMINI_API_KEY    → Google Gemini (has a free tier, no card needed)
+//   ANTHROPIC_API_KEY → Anthropic Claude (needs paid credits)
+// If both are set, Gemini is used (override with AI_PROVIDER = "anthropic").
+
+const json = (statusCode, body) => ({
+  statusCode,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+const uniq = (a) => a.filter(Boolean).filter((m, i, arr) => arr.indexOf(m) === i);
 
 // If SUPABASE_URL and SUPABASE_ANON_KEY are set, only signed-in Kalo users may call this function.
 async function verifyUser(event) {
@@ -16,18 +24,90 @@ async function verifyUser(event) {
   } catch { return false; }
 }
 
-const json = (statusCode, body) => ({
-  statusCode,
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(body),
-});
+// Both callers return { ok, status, text, detail }
+let geminiCache;
+async function geminiModels() {
+  if (process.env.GEMINI_MODEL) return [process.env.GEMINI_MODEL];
+  if (geminiCache) return geminiCache;
+  try { // ask Google which Flash models this key can use, newest first (old ones get retired)
+    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": process.env.GEMINI_API_KEY } });
+    if (r.ok) {
+      const d = await r.json();
+      const c = (d.models || [])
+        .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
+        .map((m) => { const n = m.name.replace("models/", ""); const x = /^gemini-(\d+(?:\.\d+)?)-flash(-lite)?$/.exec(n); return x ? { n, v: parseFloat(x[1]), lite: !!x[2] } : null; })
+        .filter(Boolean)
+        .sort((a, b) => b.v - a.v || a.lite - b.lite);
+      if (c.length) return (geminiCache = c.slice(0, 3).map((x) => x.n));
+    }
+  } catch { /* fall through to defaults */ }
+  return ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+}
+
+async function callGemini(prompt, image) {
+  const parts = [{ text: prompt + "\n\nReply with a single JSON object only." }];
+  if (image) parts.push({ inline_data: { mime_type: "image/jpeg", data: image } });
+  const send = (model, withThinking) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts }],
+      generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2500, temperature: 0.2, ...(withThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
+    }),
+  });
+  let last;
+  for (const model of await geminiModels()) {
+    let res = await send(model, true);
+    if (res.status === 400) res = await send(model, false); // some newer models reject thinkingBudget
+    if (res.ok) {
+      const d = await res.json();
+      const text = ((d.candidates || [])[0]?.content?.parts || []).map((p) => p.text || "").join("");
+      return { ok: true, status: 200, text };
+    }
+    const raw = await res.text().catch(() => "");
+    console.error(`Gemini error ${res.status} (model ${model}):`, raw.slice(0, 500));
+    let msg = ""; try { msg = JSON.parse(raw).error.message; } catch { msg = raw.slice(0, 160); }
+    last = { ok: false, status: res.status, detail: msg };
+    if (res.status !== 404) break; // only try the next model when this one wasn't found
+  }
+  return last;
+}
+
+async function callAnthropic(prompt, image, hasImage) {
+  const all = uniq([process.env.ANTHROPIC_MODEL, "claude-sonnet-5-5", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"]);
+  const models = process.env.ANTHROPIC_MODEL || hasImage ? all : uniq(["claude-haiku-4-5-20251001", ...all]); // text is simple: fast model first
+  const content = [];
+  if (image) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } });
+  content.push({ type: "text", text: prompt + "\n\nReply with a single JSON object only, no other text." });
+  let last;
+  for (const model of models) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({ model, max_tokens: 1000, messages: [{ role: "user", content }] }),
+    });
+    if (res.ok) {
+      const d = await res.json();
+      return { ok: true, status: 200, text: (d.content || []).map((c) => (c.type === "text" ? c.text : "")).join("") };
+    }
+    const raw = await res.text().catch(() => "");
+    console.error(`Anthropic error ${res.status} (model ${model}):`, raw.slice(0, 500));
+    let msg = ""; try { msg = JSON.parse(raw).error.message; } catch { msg = raw.slice(0, 160); }
+    last = { ok: false, status: res.status, detail: msg };
+    if (res.status !== 404) break;
+  }
+  return last;
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return json(405, { error: "Method not allowed" });
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error("ANTHROPIC_API_KEY is not set");
-    return json(500, { error: "Server not configured", detail: "ANTHROPIC_API_KEY is missing in Netlify" });
+
+  const hasGemini = !!process.env.GEMINI_API_KEY, hasClaude = !!process.env.ANTHROPIC_API_KEY;
+  if (!hasGemini && !hasClaude) {
+    console.error("No AI key set");
+    return json(500, { error: "Server not configured", detail: "Add GEMINI_API_KEY (free) or ANTHROPIC_API_KEY in Netlify" });
   }
+  const provider = hasGemini && hasClaude ? (process.env.AI_PROVIDER === "anthropic" ? "anthropic" : "gemini") : hasGemini ? "gemini" : "anthropic";
 
   const who = await verifyUser(event);
   if (who === "misconfigured") {
@@ -42,49 +122,18 @@ exports.handler = async (event) => {
   const prompt = String(b.prompt || "").slice(0, 4000);
   if (!prompt) return json(400, { error: "Missing prompt" });
 
-  const content = [];
-  if (b.image && b.image.data) {
-    if (b.image.data.length > 4_500_000) return json(413, { error: "Image too large" });
-    content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: b.image.data } });
-  }
-  content.push({ type: "text", text: prompt + "\n\nReply with a single JSON object only, no other text." });
+  const image = b.image && b.image.data ? b.image.data : null;
+  if (image && image.length > 4_500_000) return json(413, { error: "Image too large" });
 
-  const hasImage = !!(b.image && b.image.data);
-  const list = process.env.ANTHROPIC_MODEL || hasImage
-    ? MODELS
-    : ["claude-haiku-4-5-20251001", ...MODELS].filter((m, i, arr) => arr.indexOf(m) === i); // text is simple: use the fast model first
-  let res, detail = "";
-  for (const model of list) {
-    try {
-      res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({ model, max_tokens: 1000, messages: [{ role: "user", content }] }),
-      });
-    } catch (e) {
-      console.error("Anthropic unreachable:", e.message);
-      return json(502, { error: "Upstream unreachable" });
-    }
-    if (res.ok) break;
-    detail = await res.text().catch(() => "");
-    console.error(`Anthropic error ${res.status} (model ${model}):`, detail.slice(0, 500));
-    if (res.status !== 404) break; // only try the next model when this one wasn't found
-  }
+  let r;
+  try { r = provider === "gemini" ? await callGemini(prompt, image) : await callAnthropic(prompt, image, !!image); }
+  catch (e) { console.error("Upstream unreachable:", e.message); return json(502, { error: "Upstream unreachable" }); }
 
-  if (res.status === 429) return json(429, { error: "Rate limited" });
-  if (!res.ok) {
-    let msg = "";
-    try { msg = JSON.parse(detail).error.message; } catch { msg = String(detail).slice(0, 160); }
-    return json(502, { error: "Upstream error", status: res.status, detail: String(msg).slice(0, 200) });
+  if (!r.ok) {
+    if (r.status === 429) return json(429, { error: "Rate limited", detail: r.detail });
+    return json(502, { error: "Upstream error", status: r.status, detail: String(r.detail || "").slice(0, 200) });
   }
-
-  const data = await res.json();
-  const text = (data.content || []).map((c) => (c.type === "text" ? c.text : "")).join("");
-  const m = text.replace(/```json|```/g, "").match(/\{[\s\S]*\}/);
-  try { return json(200, JSON.parse(m ? m[0] : text)); }
-  catch { console.error("Unparseable AI reply:", text.slice(0, 300)); return json(502, { error: "Could not parse AI reply" }); }
+  const m = String(r.text).replace(/```json|```/g, "").match(/\{[\s\S]*\}/);
+  try { return json(200, JSON.parse(m ? m[0] : r.text)); }
+  catch { console.error("Unparseable AI reply:", String(r.text).slice(0, 300)); return json(502, { error: "Could not parse AI reply" }); }
 };
