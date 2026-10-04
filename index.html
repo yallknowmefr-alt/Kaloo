@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kalo</title>
+<script src="config.js"></script>
 <meta name="theme-color" content="#070b0a">
 <meta name="description" content="Kalo: AI calorie tracking with photo scan, water, BMI and custom workouts.">
 <meta property="og:title" content="Kalo — AI calorie, water &amp; workout tracker">
@@ -192,11 +193,29 @@ main>section:not(.hide)>.card:nth-child(5){animation-delay:.28s}
  #p2,#p3,#p4{max-width:680px}
  .grid{grid-template-columns:repeat(3,1fr)}
 }
+details#man{margin-top:12px}
+details#man summary{list-style:none;cursor:pointer;text-align:center;border:1px solid var(--ln);border-radius:14px;padding:11px;font-weight:700;color:var(--mu);transition:all .2s}
+details#man summary::-webkit-details-marker{display:none}
+details#man[open] summary{color:var(--ac);border-color:var(--ac)}
+details#man .mi{margin-top:10px;display:grid;gap:8px}
+.mrow3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hd{position:relative}
+.acct{position:absolute;top:10px;right:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.amenu{position:absolute;top:54px;right:2px;z-index:20;min-width:220px;background:var(--bg);border:1px solid var(--ln);border-radius:16px;padding:14px;box-shadow:0 16px 40px rgba(0,0,0,.4);text-align:left}
+.gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,9,7,.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);animation:fade .3s both}
+.gcard{width:100%;max-width:400px;background:var(--bg);border:1px solid var(--ln);border-radius:24px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.gcard .gl{font-size:32px;font-weight:800;text-align:center}
+.gcard input{margin-top:10px}
+.glink{background:none;border:0;color:var(--ac);font:inherit;font-weight:600;cursor:pointer;padding:8px 2px}
+.gm{min-height:20px;font-size:14px;margin-top:10px;color:#ff6b6b}.gm.ok{color:var(--ac)}
+.gate.hide,.acct.hide,.amenu.hide,.gcard .hide{display:none}
 </style>
 </head>
 <body>
 <main>
-<header class="hd"><h1><span class="lg">🥗</span> <span class="gt">Kalo</span></h1><p class="tag">Eat smart · Drink more · Move better</p></header>
+<header class="hd"><h1><span class="lg">🥗</span> <span class="gt">Kalo</span></h1><p class="tag">Eat smart · Drink more · Move better</p>
+<button id="acct" class="acct hide" aria-haspopup="true"></button>
+<div id="amenu" class="amenu hide"><div class="mu">Signed in as</div><b id="aemail" style="word-break:break-all"></b><div class="mu" id="async" style="margin:8px 0 10px">Synced ✓</div><button class="btn2" id="aout" style="margin:0">Sign out</button></div></header>
 <div class="tabs"><button id="t6" class="on"><b>🏠</b>Home</button><button id="t1"><b>🍽</b>Meals</button><button id="t3"><b>📸</b>Scan</button><button id="t2"><b>🎯</b>Goal</button><button id="t4"><b>⚖️</b>BMI</button><button id="t5"><b>🏋️</b>Workout</button></div>
 
 <section id="p6">
@@ -240,6 +259,12 @@ main>section:not(.hide)>.card:nth-child(5){animation-delay:.28s}
     <button class="btn" id="go">Estimate calories</button>
     <button class="btn2" id="toscan">📸 Or scan a photo instead</button>
     <div class="err" id="err"></div>
+    <details id="man"><summary>✍️ Or log it manually</summary><div class="mi">
+      <input id="mname" placeholder="What did you eat? e.g. Paneer fried rice">
+      <input id="mk" type="number" inputmode="numeric" placeholder="Calories (kcal)">
+      <div class="mrow3"><input id="mp2" type="number" inputmode="numeric" placeholder="Protein g"><input id="mc2" type="number" inputmode="numeric" placeholder="Carbs g"><input id="mf2" type="number" inputmode="numeric" placeholder="Fat g"></div>
+      <button class="btn" id="madd" style="margin-top:0">Add to log</button>
+    </div></details>
   </div>
   <div class="card"><div class="mu" id="empty">No meals logged yet.</div><div id="log"></div></div>
 </section>
@@ -324,15 +349,146 @@ main>section:not(.hide)>.card:nth-child(5){animation-delay:.28s}
 </section>
 <p class="mu" style="text-align:center;font-size:12px;margin:6px 0 28px">Kalo gives estimates, not medical advice. Check with a doctor or dietitian before changing your diet or training. Meal text and photos are sent to an AI service for analysis and are not saved by Kalo. Your data stays in this browser.</p>
 </main>
+<div id="gate" class="gate hide" role="dialog" aria-modal="true" aria-label="Sign in"><div class="gcard">
+<div class="gl">🥗 <span class="gt">Kalo</span></div>
+<div class="mu" style="text-align:center" id="gsub">Your goals and meals stay private to your account.</div>
+<h2 id="gtitle" style="font-size:20px;margin:16px 0 0;text-align:center"></h2>
+<input id="gemail" type="email" autocomplete="email" placeholder="Email">
+<input id="gpw" type="password" autocomplete="current-password" placeholder="Password (min 6 characters)">
+<button class="btn" id="gdo">Sign in</button>
+<div class="gm" id="gmsg" role="status"></div>
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap"><button class="glink" id="gswitch"></button><button class="glink" id="gforgot">Forgot password?</button></div>
+<button class="btn2" id="gguest" style="margin-top:6px">Continue as guest</button>
+</div></div>
 <script>
 const $=id=>document.getElementById(id);
+
+/* ---- Accounts (Supabase REST, optional). Without config.js values the app runs in guest mode ---- */
+const CFG=window.KALO_CONFIG||{};
+const AUTH_ON=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
+const SB=(CFG.supabaseUrl||"").replace(/\/$/,"");
+let session=null;try{session=JSON.parse(localStorage.getItem("kalo.auth")||"null")}catch(e){}
+const uid=AUTH_ON&&session&&session.user?session.user.id:null;
+const K=n=>uid?n+":"+uid:n;
+const lsGet=n=>localStorage.getItem(K(n));
+function lsSet(n,v){localStorage.setItem(K(n),v);cloudPush()}
+const hdr=t=>{const h={apikey:CFG.supabaseAnonKey,"Content-Type":"application/json"};
+  const b=t||(/^eyJ/.test(CFG.supabaseAnonKey)?CFG.supabaseAnonKey:null); // new-style publishable keys are not JWTs, so send them only as apikey
+  if(b)h.Authorization="Bearer "+b;return h};
+async function gotrue(path,body,t,method){
+  const r=await fetch(SB+"/auth/v1/"+path,{method:method||"POST",headers:hdr(t),body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.msg||j.error_description||j.message||j.error||"Request failed");
+  return j;
+}
+const mkSession=j=>({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Date.now()+(j.expires_in||3600)*1000,user:{id:j.user.id,email:j.user.email}});
+async function freshToken(){
+  if(!session)return null;
+  if(session.expires_at-Date.now()>60000)return session.access_token;
+  try{const j=await gotrue("token?grant_type=refresh_token",{refresh_token:session.refresh_token});session=mkSession(j);localStorage.setItem("kalo.auth",JSON.stringify(session));return session.access_token}
+  catch(e){signOut();return null}
+}
+async function authHdr(){const t=uid?await freshToken():null;return t?{"Content-Type":"application/json",Authorization:"Bearer "+t}:{"Content-Type":"application/json"}}
+function setSync(t){const e=$("async");if(e)e.textContent=t}
+let pushT;
+function cloudPush(){
+  if(!uid)return;clearTimeout(pushT);setSync("Saving…");
+  pushT=setTimeout(async()=>{try{
+    const t=await freshToken();if(!t)return;
+    const now=new Date().toISOString(),data={cal:lsGet("cal"),bmi:lsGet("bmi"),wk:lsGet("wk")};
+    const r=await fetch(SB+"/rest/v1/profiles?on_conflict=id",{method:"POST",headers:{...hdr(t),Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({id:uid,data,updated_at:now})});
+    if(!r.ok)throw new Error("push");
+    localStorage.setItem("kalo.sync:"+uid,now);setSync("Synced ✓");
+  }catch(e){setSync("Offline. Will retry on your next change.")}},1200);
+}
+function applyCloud(u,row){
+  ["cal","bmi","wk"].forEach(n=>{const v=row.data&&row.data[n];if(v!=null)localStorage.setItem(n+":"+u,v)});
+  localStorage.setItem("kalo.sync:"+u,row.updated_at);
+}
+async function cloudPull(){
+  const t=await freshToken();if(!t)return;
+  const r=await fetch(SB+"/rest/v1/profiles?id=eq."+uid+"&select=data,updated_at",{headers:hdr(t)});
+  if(!r.ok){setSync("Offline");return}
+  const row=(await r.json())[0];
+  if(!row){cloudPush();return}
+  const mine=localStorage.getItem("kalo.sync:"+uid);
+  if(Date.parse(row.updated_at)>(mine?Date.parse(mine):0)){applyCloud(uid,row);location.reload()}else setSync("Synced ✓");
+}
+async function afterLogin(sn){
+  localStorage.setItem("kalo.auth",JSON.stringify(sn));const u=sn.user.id;
+  try{
+    const r=await fetch(SB+"/rest/v1/profiles?id=eq."+u+"&select=data,updated_at",{headers:hdr(sn.access_token)});
+    const row=r.ok?(await r.json())[0]:null;
+    if(row)applyCloud(u,row);
+    else["cal","bmi","wk"].forEach(n=>{const v=localStorage.getItem(n);if(v!=null&&localStorage.getItem(n+":"+u)==null)localStorage.setItem(n+":"+u,v)});
+  }catch(e){}
+  location.reload();
+}
+function signOut(){localStorage.removeItem("kalo.auth");location.reload()}
+let gmode="in",gtok=null,hashSess=null;
+function gmsg(t,ok){$("gmsg").textContent=t||"";$("gmsg").className="gm"+(ok?" ok":"")}
+function gshow(mode,msg,ok){
+  gmode=mode;$("gate").classList.remove("hide");gmsg(msg,ok);
+  const T={in:["Welcome back","Sign in"],up:["Create your account","Create account"],forgot:["Reset your password","Send reset link"],reset:["Choose a new password","Save password"]}[mode];
+  $("gtitle").textContent=T[0];$("gdo").textContent=T[1];
+  $("gemail").classList.toggle("hide",mode==="reset");$("gpw").classList.toggle("hide",mode==="forgot");
+  $("gpw").autocomplete=mode==="in"?"current-password":"new-password";
+  $("gforgot").classList.toggle("hide",mode!=="in");
+  $("gswitch").textContent=mode==="in"?"Create account":mode==="up"?"I already have an account":"Back to sign in";
+  $("gguest").classList.toggle("hide",CFG.requireLogin!==false||mode==="reset"||mode==="forgot");
+}
+$("gswitch").onclick=()=>gshow(gmode==="in"?"up":"in");
+$("gforgot").onclick=()=>gshow("forgot");
+$("gguest").onclick=()=>$("gate").classList.add("hide");
+$("gdo").onclick=async()=>{
+  const email=$("gemail").value.trim(),pw=$("gpw").value;gmsg("");
+  $("gdo").disabled=true;
+  try{
+    if(gmode==="in"){
+      if(!email||!pw)throw new Error("Enter your email and password.");
+      await afterLogin(mkSession(await gotrue("token?grant_type=password",{email,password:pw})));
+    }else if(gmode==="up"){
+      if(!email)throw new Error("Enter your email.");
+      if(pw.length<6)throw new Error("Password must be at least 6 characters.");
+      const j=await gotrue("signup",{email,password:pw});
+      if(j.access_token)await afterLogin(mkSession(j));else gshow("in","Account created. Check your email to confirm it, then sign in.",true);
+    }else if(gmode==="forgot"){
+      if(!email)throw new Error("Enter your email.");
+      await gotrue("recover",{email});gmsg("If that email has an account, a reset link is on its way.",true);
+    }else{
+      if(pw.length<6)throw new Error("Password must be at least 6 characters.");
+      await gotrue("user",{password:pw},gtok,"PUT");
+      await afterLogin(mkSession(hashSess));
+    }
+  }catch(e){gmsg(e.message||"Something went wrong.")}
+  $("gdo").disabled=false;
+};
+["gemail","gpw"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")$("gdo").click()}));
+if(AUTH_ON){
+  $("acct").classList.remove("hide");
+  $("acct").textContent=uid?"👤 "+session.user.email.split("@")[0]:"Sign in";
+  $("aemail").textContent=uid?session.user.email:"";
+  $("acct").onclick=()=>uid?$("amenu").classList.toggle("hide"):gshow("in");
+  $("aout").onclick=signOut;
+  document.addEventListener("click",e=>{if(!e.target.closest("#amenu,#acct"))$("amenu").classList.add("hide")});
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get("access_token")){
+    const tok=h.get("access_token"),type=h.get("type");
+    history.replaceState(null,"",location.pathname+location.search);
+    gotrue("user",null,tok,"GET").then(u=>{
+      hashSess={access_token:tok,refresh_token:h.get("refresh_token"),expires_in:+h.get("expires_in")||3600,user:u};
+      if(type==="recovery"){gtok=tok;gshow("reset")}else afterLogin(mkSession(hashSess));
+    }).catch(e=>gshow("in",e.message));
+  }else if(!uid&&CFG.requireLogin!==false)gshow("in");
+  if(uid)cloudPull();
+}
 let meals=[],goal=2000,photo=null,found=[],plan=null,tdeeV=0,wtV=70,pending=null,water=0,hist={};
 const today=()=>new Date().toISOString().slice(0,10);
-try{const s=JSON.parse(localStorage.getItem("cal")||"null");if(s){hist=s.hist||{};goal=s.goal||2000;plan=s.plan||null;tdeeV=s.tdee||0;wtV=s.w||70;meals=(s.day===today()?s.meals:[])||[];water=s.day===today()?(+s.water||0):0}}catch(e){}
+try{const s=JSON.parse(lsGet("cal")||"null");if(s){hist=s.hist||{};goal=s.goal||2000;plan=s.plan||null;tdeeV=s.tdee||0;wtV=s.w||70;meals=(s.day===today()?s.meals:[])||[];water=s.day===today()?(+s.water||0):0}}catch(e){}
 function save(){try{const t=today(),sm=k=>meals.reduce((a,m)=>a+(+m[k]||0),0);
   hist[t]=Object.assign({},hist[t],{k:sm("kcal"),p:sm("p"),c:sm("c"),f:sm("f"),w:water,g:goal});
   Object.keys(hist).sort().slice(0,-30).forEach(k=>delete hist[k]);
-  localStorage.setItem("cal",JSON.stringify({goal,day:t,meals,plan,tdee:tdeeV,w:wtV,water,hist}))}catch(e){}}
+  lsSet("cal",JSON.stringify({goal,day:t,meals,plan,tdee:tdeeV,w:wtV,water,hist}))}catch(e){}}
 function tab(n){for(let i=1;i<=6;i++){$("p"+i).classList.toggle("hide",i!==n);$("t"+i).classList.toggle("on",i===n)}window.scrollTo(0,0)}
 for(let i=1;i<=6;i++)$("t"+i).onclick=()=>tab(i);$("toscan").onclick=()=>tab(3);
 
@@ -393,12 +549,17 @@ function toB64(file){return new Promise((res,rej)=>{
   im.src=url})}
 const AI={json:async(prompt,o={})=>{
   const image=o.images?{data:await toB64(o.images)}:null;
-  let r;try{r=await fetch("/.netlify/functions/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,image})})}catch(e){const x=new Error("net");x.code="network";throw x}
-  if(!r.ok){const e=new Error("ai");e.code=r.status===429?"rate_limited":r.status===400||r.status===413?"image_rejected":"error";throw e}
+  let r;try{r=await fetch("/.netlify/functions/ai",{method:"POST",headers:await authHdr(),body:JSON.stringify({prompt,image})})}catch(e){const x=new Error("net");x.code="network";throw x}
+  if(!r.ok){const e=new Error("ai");e.status=r.status;try{const j=await r.json();e.detail=j.detail||""}catch(_){}e.code=r.status===429?"rate_limited":r.status===400||r.status===413?"image_rejected":r.status===401?"auth":r.status===404?"not_found":r.status===500?"not_configured":r.status===502?"upstream":"error";throw e}
   return r.json()}};
 async function getSample(){return AI}
-function friendly(e,fallback){
+function friendly(e,fallback){const m=friendly0(e,fallback);return e&&(e.status||e.detail)?m+(e.status?" (error "+e.status+")":"")+(e.detail?": "+e.detail:""):m}
+function friendly0(e,fallback){
   if(!e)return fallback;
+  if(e.code==="auth")return"Please sign in again to use AI estimates (your session may have expired).";
+  if(e.code==="not_found")return"The AI function isn't deployed. Make sure the netlify folder is in your GitHub repo, then redeploy.";
+  if(e.code==="not_configured")return"The server has no API key yet. Add ANTHROPIC_API_KEY in Netlify, then redeploy.";
+  if(e.code==="upstream")return"The AI service returned an error. Check your API key, credits and model in Netlify → Logs → Functions.";
   return e.code==="network"?"Can't reach the server. Check your connection.":e.code==="not_granted"?"Permission to use AI was declined.":e.code==="rate_limited"?"Too many requests. Try again in a bit.":e.code==="image_rejected"?"That image couldn't be read. Try another photo.":e.code==="images_unavailable"?"Photo analysis isn't available in this view.":fallback;
 }
 
@@ -417,7 +578,7 @@ Respond with ONLY JSON: {"items":[{"name":"item with portion","kcal":number,"p":
     if(!items.length)throw 0;
     items.forEach(it=>meals.push({name:String(it.name),kcal:rnd(it.kcal),p:rnd(it.p),c:rnd(it.c),f:rnd(it.f)}));
     $("q").value="";save();render();
-  }catch(e){$("err").textContent=friendly(e,"Couldn't estimate that. Try rephrasing.")}
+  }catch(e){$("err").textContent=friendly(e,"Couldn't estimate that. Try rephrasing.")+". You can log it manually below.";$("man").open=true;if(!$("mname").value)$("mname").value=q}
   $("go").disabled=false;$("go").textContent="Estimate calories";
 };
 
@@ -529,7 +690,7 @@ $("calc").onclick=()=>{
 };
 
 /* ---- BMI ---- */
-try{const b=JSON.parse(localStorage.getItem("bmi")||"null");if(b){$("ht").value=b.h;wtV=b.w}}catch(e){}
+try{const b=JSON.parse(lsGet("bmi")||"null");if(b){$("ht").value=b.h;wtV=b.w}}catch(e){}
 $("wt").value=wtV;$("bh").value=$("ht").value;$("bw").value=wtV;
 function bmiUpd(){
   const H=+$("bh").value,W=+$("bw").value,h=H/100;
@@ -544,7 +705,7 @@ function bmiUpd(){
 ["bh","bw"].forEach(id=>$(id).oninput=()=>{
   $("ht").value=$("bh").value;$("wt").value=$("bw").value;
   if(+$("bw").value>0)wtV=+$("bw").value;
-  try{localStorage.setItem("bmi",JSON.stringify({h:$("bh").value,w:wtV}))}catch(e){}
+  try{lsSet("bmi",JSON.stringify({h:$("bh").value,w:wtV}))}catch(e){}
   bmiUpd();render();
 });
 bmiUpd();
@@ -636,8 +797,8 @@ const TPL=[["Full body",["sq","pu","br","lu","pk"]],["Push",["bp","ip","lt","op"
 const ex=id=>EX.find(e=>e[0]===id);
 const fg={};const img=id=>fg[id]||(fg[id]=fig(ex(id)[8],ex(id)[9]));
 let cur=[],saved=[],filt="All";
-try{const w=JSON.parse(localStorage.getItem("wk")||"null");if(w){cur=w.cur||[];saved=w.saved||[];$("rn").value=w.name||""}}catch(e){}
-function wsave(){try{localStorage.setItem("wk",JSON.stringify({cur,saved,name:$("rn").value}))}catch(e){}}
+try{const w=JSON.parse(lsGet("wk")||"null");if(w){cur=w.cur||[];saved=w.saved||[];$("rn").value=w.name||""}}catch(e){}
+function wsave(){try{lsSet("wk",JSON.stringify({cur,saved,name:$("rn").value}))}catch(e){}}
 function est(items){
   let sec=0,kc=0;
   items.forEach(i=>{const e=ex(i.id);const t=(e[7]==="reps"?i.reps*3:e[7]==="min"?i.reps*60:i.reps)*i.sets+(i.sets>1?(i.sets-1)*45:0);sec+=t;kc+=(MET[e[2]]||4)*wtV*t/3600});
@@ -800,6 +961,12 @@ function confetti(){
     P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);g.restore()});
     if(t<140)requestAnimationFrame(f);else c.remove()})();
 }
+$("madd").onclick=()=>{
+  const k=$("mk").value;if(k===""||!(+k>=0))return;
+  meals.push({name:$("mname").value.trim()||"Meal",kcal:Math.round(+k),p:Math.round(+$("mp2").value||0),c:Math.round(+$("mc2").value||0),f:Math.round(+$("mf2").value||0)});
+  ["mname","mk","mp2","mc2","mf2"].forEach(id=>$(id).value="");
+  save();render();$("madd").textContent="Added ✓";setTimeout(()=>$("madd").textContent="Add to log",1200);
+};
 $("wp").onclick=()=>{water+=250;save();render()};
 $("wm").onclick=()=>{water=Math.max(0,water-250);save();render()};
 render();
