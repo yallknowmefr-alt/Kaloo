@@ -550,12 +550,13 @@ function toB64(file){return new Promise((res,rej)=>{
 const AI={json:async(prompt,o={})=>{
   const image=o.images?{data:await toB64(o.images)}:null;
   let r;try{r=await fetch("/.netlify/functions/ai",{method:"POST",headers:await authHdr(),body:JSON.stringify({prompt,image})})}catch(e){const x=new Error("net");x.code="network";throw x}
-  if(!r.ok){const e=new Error("ai");e.status=r.status;try{const j=await r.json();e.detail=j.detail||""}catch(_){}e.code=r.status===429?"rate_limited":r.status===400||r.status===413?"image_rejected":r.status===401?"auth":r.status===404?"not_found":r.status===500?"not_configured":r.status===502?"upstream":"error";throw e}
+  if(!r.ok){const e=new Error("ai");e.status=r.status;try{const j=await r.json();e.detail=j.detail||""}catch(_){}e.code=r.status===503?"busy":r.status===429?"rate_limited":r.status===400||r.status===413?"image_rejected":r.status===401?"auth":r.status===404?"not_found":r.status===500?"not_configured":r.status===502?"upstream":"error";throw e}
   return r.json()}};
 async function getSample(){return AI}
-function friendly(e,fallback){const m=friendly0(e,fallback);return e&&(e.status||e.detail)?m+(e.status?" (error "+e.status+")":"")+(e.detail?": "+e.detail:""):m}
+function friendly(e,fallback){const m=friendly0(e,fallback);return e&&(e.status||e.detail)&&e.code!=="busy"?m+(e.status?" (error "+e.status+")":"")+(e.detail?": "+e.detail:""):m}
 function friendly0(e,fallback){
   if(!e)return fallback;
+  if(e.code==="busy")return"The AI is busy right now (Google\'s free servers get crowded). Wait a few seconds and tap the button again.";
   if(e.code==="auth")return"Please sign in again to use AI estimates (your session may have expired).";
   if(e.code==="not_found")return"The AI function isn't deployed. Make sure the netlify folder is in your GitHub repo, then redeploy.";
   if(e.code==="not_configured")return"The AI isn\'t set up on the server yet. Add a free GEMINI_API_KEY in Netlify, then redeploy.";
