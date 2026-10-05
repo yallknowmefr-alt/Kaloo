@@ -200,8 +200,14 @@ details#man[open] summary{color:var(--ac);border-color:var(--ac)}
 details#man .mi{margin-top:10px;display:grid;gap:8px}
 .mrow3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .hd{position:relative}
-.acct{position:absolute;top:10px;right:2px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-.amenu{position:absolute;top:54px;right:2px;z-index:20;min-width:220px;background:var(--bg);border:1px solid var(--ln);border-radius:16px;padding:14px;box-shadow:0 16px 40px rgba(0,0,0,.4);text-align:left}
+.acct{position:absolute;top:12px;right:4px;width:34px;height:34px;padding:0;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,var(--ac),#26c6da);color:var(--onac);font:inherit;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(61,220,151,.35);transition:transform .15s}
+.acct:hover{transform:scale(1.08)}.acct:active{transform:scale(.94)}
+.acct img{width:100%;height:100%;object-fit:cover;display:block}
+.acct.guest{background:var(--card);border:1px solid var(--ln);box-shadow:none;font-size:16px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 0;width:100%;background:#fff;color:#1f1f1f;border:1px solid #dadce0;font-weight:700}
+.gbtn:hover{background:#f6f6f6}
+.gor{display:flex;align-items:center;gap:10px;color:var(--mu);font-size:12px;margin-top:12px}.gor::before,.gor::after{content:"";flex:1;height:1px;background:var(--ln)}
+.amenu{position:absolute;top:52px;right:2px;z-index:20;min-width:220px;background:var(--bg);border:1px solid var(--ln);border-radius:16px;padding:14px;box-shadow:0 16px 40px rgba(0,0,0,.4);text-align:left}
 .gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,9,7,.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);animation:fade .3s both}
 .gcard{width:100%;max-width:400px;background:var(--bg);border:1px solid var(--ln);border-radius:24px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
 .gcard .gl{font-size:32px;font-weight:800;text-align:center}
@@ -353,10 +359,12 @@ details#man .mi{margin-top:10px;display:grid;gap:8px}
 <div class="gl">🥗 <span class="gt">Kalo</span></div>
 <div class="mu" style="text-align:center" id="gsub">Your goals and meals stay private to your account.</div>
 <h2 id="gtitle" style="font-size:20px;margin:16px 0 0;text-align:center"></h2>
+<button class="btn2 gbtn" id="ggoogle" type="button"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continue with Google</button>
+<div class="gor" id="gor">or use email</div>
 <input id="gemail" type="email" autocomplete="email" placeholder="Email">
 <input id="gpw" type="password" autocomplete="current-password" placeholder="Password (min 6 characters)">
 <button class="btn" id="gdo">Sign in</button>
-<div class="gm" id="gmsg" role="status"></div>
+<div class="gm" id="gerr" role="status"></div>
 <div style="display:flex;justify-content:space-between;flex-wrap:wrap"><button class="glink" id="gswitch"></button><button class="glink" id="gforgot">Forgot password?</button></div>
 <button class="btn2" id="gguest" style="margin-top:6px">Continue as guest</button>
 </div></div>
@@ -381,7 +389,7 @@ async function gotrue(path,body,t,method){
   if(!r.ok)throw new Error(j.msg||j.error_description||j.message||j.error||"Request failed");
   return j;
 }
-const mkSession=j=>({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Date.now()+(j.expires_in||3600)*1000,user:{id:j.user.id,email:j.user.email}});
+const mkSession=j=>({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Date.now()+(j.expires_in||3600)*1000,user:{id:j.user.id,email:j.user.email,name:(j.user.user_metadata||{}).full_name||(j.user.user_metadata||{}).name||"",avatar:(j.user.user_metadata||{}).avatar_url||(j.user.user_metadata||{}).picture||""}});
 async function freshToken(){
   if(!session)return null;
   if(session.expires_at-Date.now()>60000)return session.access_token;
@@ -426,7 +434,7 @@ async function afterLogin(sn){
 }
 function signOut(){localStorage.removeItem("kalo.auth");location.reload()}
 let gmode="in",gtok=null,hashSess=null;
-function gmsg(t,ok){$("gmsg").textContent=t||"";$("gmsg").className="gm"+(ok?" ok":"")}
+function gmsg(t,ok){$("gerr").textContent=t||"";$("gerr").className="gm"+(ok?" ok":"")}
 function gshow(mode,msg,ok){
   gmode=mode;$("gate").classList.remove("hide");gmsg(msg,ok);
   const T={in:["Welcome back","Sign in"],up:["Create your account","Create account"],forgot:["Reset your password","Send reset link"],reset:["Choose a new password","Save password"]}[mode];
@@ -435,8 +443,11 @@ function gshow(mode,msg,ok){
   $("gpw").autocomplete=mode==="in"?"current-password":"new-password";
   $("gforgot").classList.toggle("hide",mode!=="in");
   $("gswitch").textContent=mode==="in"?"Create account":mode==="up"?"I already have an account":"Back to sign in";
+  const gg=CFG.googleLogin===false||mode==="forgot"||mode==="reset";
+  $("ggoogle").classList.toggle("hide",gg);$("gor").classList.toggle("hide",gg);
   $("gguest").classList.toggle("hide",CFG.requireLogin!==false||mode==="reset"||mode==="forgot");
 }
+$("ggoogle").onclick=()=>{location.href=SB+"/auth/v1/authorize?provider=google&redirect_to="+encodeURIComponent(location.origin+location.pathname)};
 $("gswitch").onclick=()=>gshow(gmode==="in"?"up":"in");
 $("gforgot").onclick=()=>gshow("forgot");
 $("gguest").onclick=()=>$("gate").classList.add("hide");
@@ -466,13 +477,17 @@ $("gdo").onclick=async()=>{
 ["gemail","gpw"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")$("gdo").click()}));
 if(AUTH_ON){
   $("acct").classList.remove("hide");
-  $("acct").textContent=uid?"👤 "+session.user.email.split("@")[0]:"Sign in";
-  $("aemail").textContent=uid?session.user.email:"";
+  const au=uid?session.user:null,ac=$("acct"),ini=au?(au.name||au.email||"?")[0].toUpperCase():"👤";
+  ac.setAttribute("aria-label",au?"Account menu":"Sign in");ac.classList.toggle("guest",!au);ac.textContent=ini;
+  if(au&&au.avatar){const im=new Image();im.alt="";im.referrerPolicy="no-referrer";im.onload=()=>{ac.textContent="";ac.append(im)};im.src=au.avatar}
+  $("aemail").textContent=au?(au.name?au.name+" · "+au.email:au.email):"";
   $("acct").onclick=()=>uid?$("amenu").classList.toggle("hide"):gshow("in");
   $("aout").onclick=signOut;
   document.addEventListener("click",e=>{if(!e.target.closest("#amenu,#acct"))$("amenu").classList.add("hide")});
   const h=new URLSearchParams(location.hash.slice(1));
-  if(h.get("access_token")){
+  const errD=h.get("error_description")||new URLSearchParams(location.search).get("error_description");
+  if(errD){history.replaceState(null,"",location.pathname);gshow("in",errD)}
+  else if(h.get("access_token")){
     const tok=h.get("access_token"),type=h.get("type");
     history.replaceState(null,"",location.pathname+location.search);
     gotrue("user",null,tok,"GET").then(u=>{
